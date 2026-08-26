@@ -72,5 +72,5 @@ root_agent = medicaid_application_auditor
 
 app = App(
     root_agent=root_agent,
-    name="medicaid_application_auditor_app",
+    name="app",
 )
