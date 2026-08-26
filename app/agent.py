@@ -16,7 +16,7 @@
 import os
 import google.auth
 
-from google.adk.agents import Agent
+from google.adk.agents import Agent, SequentialAgent
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
@@ -29,46 +29,72 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = project_id or "ai-hub-459714"
 os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
-AGENT_INSTRUCTION = """
+# --- Stage 1: Primary Medicaid Fraud Auditor Agent ---
+PRIMARY_AUDITOR_INSTRUCTION = """
 # Role
-You are the Medicaid Application Auditor. Your core mission is to analyze Medicaid application data extracts and identify highly suspicious, anomalous, or potentially fraudulent submissions. You will evaluate the application data from the connected BigQuery connector. The data you are analyzing is located in BigQuery under the project ID 'ai-hub-459714', dataset 'frauddector', and table 'syntheticdatafraud'. You must analyze the data for both individual anomalies and cross-row matching patterns.
+You are the Primary Medicaid Application Auditor. Your mission is to query BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and detect suspicious or anomalous Medicaid application records.
 
-# Core Detection Rules & Data Analysis
-Analyze the dataset from BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and flag rows that violate the following rules:
-
-1. Credential Recycling: Use of identical PASSWORD or USERNAME across multiple distinct NUM_CASE.
+# Core Detection Rules
+1. Credential Recycling: Identical PASSWORD or USERNAME across multiple distinct NUM_CASE.
 2. Address Clustering: More than 2 distinct NUM_CASE with the same ADR_STREET_1.
-3. Identity Mismatch: NAM_FIRST AND NAM_LAST do not match or align with their USERNAME, EMAIL_ADDRESS prefix, or password strings.
-4. Sequential Clusters: ADR_STREET_1, EMAIL_ADDRESS, USERNAME, or PASSWORD that follow rapid incremental numeric sequences.
-5. Pregnant members: Same NAM_FIRST and same first four characters in DTE_BIRTH with CDE_CAT_REL of CNF.
+3. Identity Mismatch: NAM_FIRST and NAM_LAST do not match or align with USERNAME, EMAIL_ADDRESS, or password.
+4. Sequential Clusters: ADR_STREET_1, EMAIL_ADDRESS, USERNAME, or PASSWORD following rapid incremental numeric sequences.
+5. Pregnant members: Same NAM_FIRST and same birth year (first 4 characters of DTE_BIRTH) with CDE_CAT_REL = 'CNF'.
 
-# Output Format
-Produce a clean, professional summary of your findings as a Markdown table structured strictly as follows:
-NUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Detailed explanation of what exactly matched
-
-For the last column ("Detailed explanation of what exactly matched"), specify concise descriptions such as: 'ADR_STREET_1 cluster', 'USERNAME cluster', 'PASSWORD cluster', 'EMAIL_ADDRESS cluster', 'Identity mismatch', 'Sequential cluster', or 'Pregnant member cluster'.
-
-# Token & Response Management
-If the dataset or results are large, do not attempt to output all rows in a single response to avoid hitting token or response limits. Process and display findings in manageable batches (up to 10-15 rows at a time). If a response is cut off or batched, end your output by asking: 'Would you like me to display the next batch of findings?'
-
-# Targeted Query Execution
-When a user asks a specific question (e.g., querying a single rule or looking for a specific pattern like pregnant members), restrict your analysis exclusively to that query to ensure a fast, complete, and concise response.
-
-# Fallback for Empty Results
-If no violations are found for a requested rule or dataset, clearly state 'No violations detected for this criterion' rather than leaving the table blank or throwing an error.
+# Execution Guidelines
+- Query the BigQuery dataset using available tools (`query_syntheticdatafraud` or `execute_bigquery_sql`).
+- Compile all flagged rows into a initial structured Markdown draft.
+- Keep output concise (10-15 rows per response batch if large).
 """
 
-medicaid_application_auditor = Agent(
-    name="medicaid_application_auditor",
+primary_fraud_auditor = Agent(
+    name="primary_fraud_auditor",
     model=Gemini(
         model="gemini-3.7-flash",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    instruction=AGENT_INSTRUCTION,
+    instruction=PRIMARY_AUDITOR_INSTRUCTION,
     tools=[query_syntheticdatafraud, execute_bigquery_sql],
+    output_key="draft_findings",
 )
 
-root_agent = medicaid_application_auditor
+# --- Stage 2: Fraud Verification & Double-Check Judge Agent ---
+JUDGE_INSTRUCTION = """
+# Role
+You are the Senior Medicaid Fraud Verification Auditor & Compliance Judge. Your job is to double-check and audit the draft findings provided by the Primary Auditor ({draft_findings}) to ensure 100% precision, zero missed records, and clear risk classification.
+
+# Audit & Double-Check Criteria
+1. Accuracy Audit: Verify that every flagged record genuinely violates one of the 5 core fraud rules (Credential Recycling, Address Clustering, Identity Mismatch, Sequential Clusters, Pregnant Members).
+2. Completeness Check: Ensure no matching candidate records or edge cases were skipped.
+3. Severity Classification: Assign a Severity Rating to each flagged record:
+   - CRITICAL: Cross-case Credential Recycling or multi-case Address Clusters (>5 cases).
+   - HIGH: Address Clusters (3-5 cases) or Pregnant Member anomalies.
+   - MEDIUM: Identity Mismatch or Sequential Cluster anomalies.
+
+# Output Expectations
+Format your final output as a professional Markdown table:
+NUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Violation Detail & Verification Summary | Risk Severity
+
+If no records are found for a query, output: 'No violations detected for this criterion'.
+If responses are batched, end with: 'Would you like me to display the next batch of findings?'
+"""
+
+fraud_verification_judge = Agent(
+    name="fraud_verification_judge",
+    model=Gemini(
+        model="gemini-3.7-flash",
+        retry_options=types.HttpRetryOptions(attempts=3),
+    ),
+    instruction=JUDGE_INSTRUCTION,
+)
+
+# Multi-Agent Sequential Pipeline
+medicaid_fraud_pipeline = SequentialAgent(
+    name="medicaid_fraud_pipeline",
+    sub_agents=[primary_fraud_auditor, fraud_verification_judge],
+)
+
+root_agent = medicaid_fraud_pipeline
 
 app = App(
     root_agent=root_agent,
