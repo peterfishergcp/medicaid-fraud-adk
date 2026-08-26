@@ -1,6 +1,8 @@
-# medicaid-fraud-adk
+# Medicaid Application Auditor ADK Agent
 
-Simple ReAct agent
+> **DISCLAIMER:** This project is provided solely as an illustrative sample and proof-of-concept for educational and demonstration purposes. This is **NOT** an official Google product or officially supported Google software. It is provided "as is" without warranty or guarantee of any kind.
+
+Simple ReAct agent built with Google Agent Development Kit (ADK).
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.41.3`
 
 ## Project Structure
