@@ -1,0 +1,52 @@
+{
+  "eval_set_id": "medicaid_fraud_eval",
+  "name": "Medicaid Application Auditor Evaluation",
+  "description": "Evaluation set for testing Medicaid Application Auditor fraud detection rules against BigQuery syntheticdatafraud.",
+  "eval_cases": [
+    {
+      "eval_id": "auditor_greeting",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [{"text": "Hello, what is your role and what data do you analyze?"}]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "address_clustering_query",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [{"text": "Check for address clustering in the application data where more than 2 cases share the same street address."}]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "pregnant_members_query",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [{"text": "Identify any pregnant members pattern (CDE_CAT_REL = 'CNF') sharing the same first name and birth year."}]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}
