@@ -66,16 +66,35 @@ For full command options and usage, refer to the [Makefile](Makefile).
 Edit your agent logic in `app/agent.py` and test with `make playground` - it auto-reloads on save.
 See the [development guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/development-guide) for the full workflow.
 
-## Deployment
+## Deployment Options
+
+### Option 1: Cloud Run Deployment
+
+Deploy the agent as a containerized FastAPI web app on Cloud Run:
 
 ```bash
 gcloud config set project <your-project-id>
 make deploy
 ```
 
-To add CI/CD and Terraform, run `uvx agent-starter-pack enhance`.
-To set up your production infrastructure, run `uvx agent-starter-pack setup-cicd`.
-See the [deployment guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/deployment) for details.
+### Option 2: Agent Engine & Gemini Enterprise Deployment
+
+Deploy the agent directly to **Vertex AI Agent Engine** (Reasoning Engines) and publish to **Gemini Enterprise**:
+
+1. **Deploy to Agent Engine:**
+   ```bash
+   uv run adk deploy agent_engine --project=<your-project-id> --region=us-central1 ./app
+   ```
+
+2. **Publish Agent to Gemini Enterprise App:**
+   ```bash
+   uv run agents-cli publish gemini-enterprise \
+     --agent-runtime-id "projects/<project-number>/locations/us-central1/reasoningEngines/<reasoning-engine-id>" \
+     --gemini-enterprise-app-id "projects/<your-project-id>/locations/global/collections/default_collection/engines/<engine-app-id>" \
+     --display-name "Medicaid Application Auditor" \
+     --description "Analyzes Medicaid application extracts to identify highly suspicious, anomalous, or potentially fraudulent submissions." \
+     --registration-type adk
+   ```
 
 ## Observability
 
