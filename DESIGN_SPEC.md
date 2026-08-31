@@ -2,11 +2,11 @@
 
 ## Overview
 
-The **Medicaid Application Auditor** is an autonomous ADK agent designed to analyze Medicaid application data extracts in BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and identify highly suspicious, anomalous, or potentially fraudulent submissions.
+The **Medicaid Application Auditor** is an autonomous ADK agent designed to analyze Medicaid application data extracts in BigQuery (`<PROJECT_ID>.<DATASET>.<TABLE>`) and identify highly suspicious, anomalous, or potentially fraudulent submissions.
 
 The agent leverages a remote/built-in **BigQuery MCP Server** (`https://bigquery.googleapis.com/mcp`) to query and evaluate application records for both individual row anomalies and cross-row clustering patterns.
 
-The project packages the ADK Agent along with the **ADK Web UI** (`adk web`), containerized via Docker and deployed to **Google Cloud Run** in project `ai-hub-459714`.
+The project packages the ADK Agent along with the **ADK Web UI** (`adk web`), containerized via Docker and deployed to **Google Cloud Run**.
 
 ---
 
@@ -14,7 +14,7 @@ The project packages the ADK Agent along with the **ADK Web UI** (`adk web`), co
 
 - **Agent Name**: `medicaid_application_auditor`
 - **Model**: `gemini-3.7-flash` (Gemini 3.7 Flash)
-- **Target BigQuery Table**: `ai-hub-459714.frauddector.syntheticdatafraud`
+- **Target BigQuery Table**: `<PROJECT_ID>.<DATASET>.<TABLE>`
 - **MCP Server Connector**: BigQuery Remote MCP Server (`https://bigquery.googleapis.com/mcp`) / `execute_sql`
 
 ---

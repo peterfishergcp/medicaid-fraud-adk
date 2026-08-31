@@ -21,18 +21,24 @@ from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from app.tools import query_syntheticdatafraud, execute_bigquery_sql
+from .tools import query_syntheticdatafraud, execute_bigquery_sql
 
-# Set environment variables for Vertex AI / Gemini
-_, project_id = google.auth.default()
-os.environ["GOOGLE_CLOUD_PROJECT"] = project_id or "ai-hub-459714"
-os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
+# Load environment variables (from .env or shell environment)
+_, default_project = google.auth.default()
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or default_project or "your-gcp-project-id"
+LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+DATASET_NAME = os.environ.get("BIGQUERY_DATASET", "frauddetector")
+TABLE_NAME = os.environ.get("BIGQUERY_TABLE", "syntheticdatafraud")
+FULL_TABLE_REF = f"{PROJECT_ID}.{DATASET_NAME}.{TABLE_NAME}"
+
+os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
+os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
 # --- Stage 1: Primary Medicaid Fraud Auditor Agent ---
-PRIMARY_AUDITOR_INSTRUCTION = """
+PRIMARY_AUDITOR_INSTRUCTION = f"""
 # Role
-You are the Primary Medicaid Application Auditor. Your mission is to query BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and detect suspicious or anomalous Medicaid application records.
+You are the Primary Medicaid Application Auditor. Your mission is to query BigQuery (`{FULL_TABLE_REF}`) and detect suspicious or anomalous Medicaid application records.
 
 # Core Detection Rules
 1. Credential Recycling: Identical PASSWORD or USERNAME across multiple distinct NUM_CASE.
@@ -43,7 +49,7 @@ You are the Primary Medicaid Application Auditor. Your mission is to query BigQu
 
 # Execution Guidelines
 - Query the BigQuery dataset using available tools (`query_syntheticdatafraud` or `execute_bigquery_sql`).
-- Compile all flagged rows into a initial structured Markdown draft.
+- Compile all flagged rows into an initial structured Markdown draft.
 - Keep output concise (10-15 rows per response batch if large).
 """
 

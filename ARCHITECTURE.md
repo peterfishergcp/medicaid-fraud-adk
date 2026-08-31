@@ -72,7 +72,7 @@ flowchart TD
 ## 3. Data Connectors & BigQuery Integration
 
 ### A. Custom BigQuery Tools / MCP Integration
-- **`query_syntheticdatafraud`**: Direct Python tool wrapper querying BigQuery dataset `ai-hub-459714.frauddector.syntheticdatafraud`. Supports `credential_recycling`, `address_clustering`, `pregnant_members`, `all`, and `custom` WHERE clauses.
+- **`query_syntheticdatafraud`**: Direct Python tool wrapper querying BigQuery dataset `<PROJECT_ID>.<DATASET>.<TABLE>`. Supports `credential_recycling`, `address_clustering`, `pregnant_members`, `all`, and `custom` WHERE clauses.
 - **`execute_bigquery_sql`**: Allows ad-hoc custom SQL queries for complex fraud pattern inspection.
 
 ### B. Pre-Computed BigQuery Analytical Views
@@ -91,5 +91,5 @@ To optimize query response times and avoid repeated full-table scans, the data l
 | `primary_fraud_auditor` | `Agent` | `gemini-3.7-flash` | Runs BigQuery queries and compiles initial candidate matches. |
 | `fraud_verification_judge` | `Agent` | `gemini-3.7-flash` | Double-checks findings, eliminates false positives, and assigns risk severity. |
 | `query_syntheticdatafraud` | Tool | BigQuery Python SDK | Connects to BigQuery and executes optimized detection queries. |
-| `execute_bigquery_sql` | Tool | BigQuery Python SDK | Executes ad-hoc query analysis against dataset `syntheticdatafraud`. |
-| `syntheticdatafraud` | Data Table | BigQuery Table | Source dataset containing Medicaid application extracts (`ai-hub-459714`). |
+| `execute_bigquery_sql` | Tool | BigQuery Python SDK | Executes ad-hoc query analysis against target BigQuery dataset. |
+| `syntheticdatafraud` | Data Table | BigQuery Table | Source dataset containing Medicaid application extracts. |

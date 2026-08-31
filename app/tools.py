@@ -4,10 +4,12 @@ from typing import Any, Dict, List, Optional
 import google.auth
 from google.cloud import bigquery
 
-# Default project setup
+# Dynamic project & BigQuery target table setup
 _, default_project = google.auth.default()
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", default_project or "ai-hub-459714")
-TARGET_TABLE = "ai-hub-459714.frauddector.syntheticdatafraud"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or default_project or "your-gcp-project-id"
+DATASET_NAME = os.environ.get("BIGQUERY_DATASET", "frauddetector")
+TABLE_NAME = os.environ.get("BIGQUERY_TABLE", "syntheticdatafraud")
+TARGET_TABLE = f"{PROJECT_ID}.{DATASET_NAME}.{TABLE_NAME}"
 
 
 def query_syntheticdatafraud(
@@ -16,11 +18,11 @@ def query_syntheticdatafraud(
     offset: int = 0,
     custom_where_clause: Optional[str] = None
 ) -> str:
-    """Queries the Medicaid application dataset `ai-hub-459714.frauddector.syntheticdatafraud` in BigQuery.
+    """Queries the Medicaid application dataset in BigQuery.
 
     Args:
         query_type: Type of query analysis to run. Supported types:
-            - 'all': Fetch raw rows from syntheticdatafraud.
+            - 'all': Fetch raw rows from target dataset.
             - 'credential_recycling': Find duplicate USERNAME or PASSWORD across distinct NUM_CASE.
             - 'address_clustering': Find ADR_STREET_1 values with more than 2 distinct NUM_CASE.
             - 'pregnant_members': Find members with CDE_CAT_REL = 'CNF' sharing NAM_FIRST and birth year (first 4 chars of DTE_BIRTH).

@@ -31,11 +31,28 @@ Before you begin, ensure you have:
 
 ## Quick Start
 
-Install required packages and launch the local development environment:
+1. Run the interactive installer to set up your environment variables and install dependencies:
 
 ```bash
-make install && make playground
+./install.sh
 ```
+
+2. Launch the local development environment:
+
+```bash
+make playground
+```
+
+### Environment Configuration
+
+The agent reads its GCP & BigQuery target parameters from `.env` (or your shell environment):
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `GOOGLE_CLOUD_PROJECT` | GCP Project ID | Active `gcloud` project |
+| `GOOGLE_CLOUD_LOCATION` | GCP Region / Location | `us-central1` |
+| `BIGQUERY_DATASET` | BigQuery Dataset name | `frauddetector` |
+| `BIGQUERY_TABLE` | BigQuery Table name | `syntheticdatafraud` |
 
 ## Commands
 
