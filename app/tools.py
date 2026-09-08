@@ -256,11 +256,19 @@ def filter_applications(
         return json.dumps({"error": "An error occurred while querying applications."})
 
 
-# Regex to disallow destructive or non-SELECT DDL/DML operations
-FORBIDDEN_SQL_KEYWORDS = re.compile(
-    r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|MERGE|TRUNCATE|GRANT|REVOKE|EXECUTE|EXEC|CALL)\b",
-    re.IGNORECASE,
-)
+# Multi-statement / comment / DDL / DML keywords & injection patterns
+FORBIDDEN_SQL_PATTERNS = [
+    re.compile(
+        r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|MERGE|TRUNCATE|GRANT|REVOKE|EXECUTE|EXEC|CALL|EXPORT|LOAD|ASSERT)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(r";"),  # Multi-statement / stacked query injection
+    re.compile(r"--"),  # SQL comment injection
+    re.compile(r"/\*.*?\*/", re.DOTALL),  # Block comments
+    re.compile(
+        r"\bINFORMATION_SCHEMA\b", re.IGNORECASE
+    ),  # Schema enumeration protection
+]
 
 
 def execute_read_only_bigquery_sql(sql_query: str) -> str:
@@ -273,24 +281,30 @@ def execute_read_only_bigquery_sql(sql_query: str) -> str:
         JSON string containing the query results or error message.
     """
     stripped_query = sql_query.strip()
-    # 1. Enforce SELECT only
-    if not stripped_query.lower().startswith(
-        "select"
-    ) and not stripped_query.lower().startswith("with"):
-        return json.dumps(
-            {"error": "Only read-only SELECT or WITH statements are permitted."}
-        )
 
-    # 2. Block DML / DDL / Administrative SQL
-    if FORBIDDEN_SQL_KEYWORDS.search(stripped_query):
+    # 1. Enforce SELECT or WITH as the sole starting token
+    if not (
+        stripped_query.lower().startswith("select")
+        or stripped_query.lower().startswith("with")
+    ):
         return json.dumps(
             {
-                "error": "Disallowed SQL statement detected. Only read-only operations are supported."
+                "error": "Security check failed: Only read-only SELECT or WITH statements are permitted."
             }
         )
 
+    # 2. Block stacked queries, DDL/DML, comments, and schema extraction
+    for pattern in FORBIDDEN_SQL_PATTERNS:
+        if pattern.search(stripped_query):
+            return json.dumps(
+                {
+                    "error": "Security check failed: Disallowed SQL construct or comment syntax detected."
+                }
+            )
+
     client = get_bq_client()
     try:
+        # Dry-run validation check or direct execution with job config
         query_job = client.query(stripped_query)
         return json.dumps(_sanitize_rows(query_job))
     except Exception as e:
