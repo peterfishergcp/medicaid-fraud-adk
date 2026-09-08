@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import pytest
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -20,6 +22,10 @@ from google.genai import types
 from app.agent import root_agent
 
 
+@pytest.mark.skipif(
+    not os.environ.get("GOOGLE_CLOUD_PROJECT") and not os.environ.get("GEMINI_API_KEY"),
+    reason="Skipping live agent stream test because Google Cloud / Gemini credentials are not configured in this environment.",
+)
 def test_agent_stream() -> None:
     """
     Integration test for the agent stream functionality.
@@ -32,7 +38,7 @@ def test_agent_stream() -> None:
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
     message = types.Content(
-        role="user", parts=[types.Part.from_text(text="Why is the sky blue?")]
+        role="user", parts=[types.Part.from_text(text="Audit Medicaid applications for credential recycling")]
     )
 
     events = list(
