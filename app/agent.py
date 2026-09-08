@@ -18,7 +18,7 @@ from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from .config import FULL_TABLE_REF
+from .config import FULL_TABLE_REF, LOCATION
 from .tools import (
     audit_address_clustering,
     audit_credential_recycling,
@@ -55,7 +55,7 @@ primary_fraud_auditor = Agent(
     name="primary_fraud_auditor",
     model=Gemini(
         model="gemini-3.8-flash",
-        client_options={"location": "global"},
+        client_options={"location": LOCATION},
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=PRIMARY_AUDITOR_INSTRUCTION,
@@ -100,7 +100,7 @@ fraud_verification_judge = Agent(
     name="fraud_verification_judge",
     model=Gemini(
         model="gemini-3.8-flash",
-        client_options={"location": "global"},
+        client_options={"location": LOCATION},
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=JUDGE_INSTRUCTION,

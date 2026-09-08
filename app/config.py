@@ -13,22 +13,18 @@
 # limitations under the License.
 
 import os
+from dotenv import load_dotenv
 
-import google.auth
+load_dotenv()
 
-# Resolve GCP Project ID from auth or environment
-_, default_project = google.auth.default()
-PROJECT_ID: str = (
-    os.environ.get("GOOGLE_CLOUD_PROJECT") or default_project or "your-gcp-project-id"
-)
-LOCATION: str = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+# Google Cloud project & region configuration
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "ai-hub-459714")
+LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
+USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in ("true", "1", "t")
 
-# BigQuery Dataset and Table targets
-DATASET_NAME: str = os.environ.get("BIGQUERY_DATASET", "frauddetector")
-TABLE_NAME: str = os.environ.get("BIGQUERY_TABLE", "syntheticdatafraud")
-FULL_TABLE_REF: str = f"{PROJECT_ID}.{DATASET_NAME}.{TABLE_NAME}"
+# BigQuery dataset and table configuration
+DATASET_ID = os.getenv("BIGQUERY_DATASET", "frauddetector")
+TABLE_ID = os.getenv("BIGQUERY_TABLE", "syntheticdatafraud")
 
-# Configure Google GenAI runtime defaults
-os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
-os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
-os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
+# Fully qualified BigQuery table reference (e.g. `ai-hub-459714.frauddetector.syntheticdatafraud`)
+FULL_TABLE_REF = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
