@@ -28,7 +28,7 @@ USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in (
 )
 
 # BigQuery dataset and table configuration
-DATASET_ID = os.getenv("BIGQUERY_DATASET", "frauddetector")
+DATASET_ID = os.getenv("BIGQUERY_DATASET", "frauddector")
 TABLE_ID = os.getenv("BIGQUERY_TABLE", "syntheticdatafraud")
 
 # Fully qualified BigQuery table reference (e.g. `ai-hub-459714.frauddetector.syntheticdatafraud`)
