@@ -22,6 +22,12 @@ from .config import FULL_TABLE_REF, PROJECT_ID
 
 logger = logging.getLogger(__name__)
 
+# Strict limits to prevent container OOM and LLM token limit exhaustion
+MAX_ROW_LIMIT = 100
+
+# Hard cap on bytes scanned per query (100 MB) to prevent Denial of Wallet / runaway queries
+MAX_BYTES_BILLED = 100 * 1024 * 1024
+
 # Module-level singleton BigQuery client to avoid re-instantiation overhead & socket exhaustion
 _bq_client: bigquery.Client | None = None
 
@@ -34,14 +40,35 @@ def get_bq_client() -> bigquery.Client:
     return _bq_client
 
 
-def _sanitize_rows(query_job: bigquery.QueryJob) -> list[dict[str, Any]]:
-    """Helper to convert BigQuery RowIterator to a JSON-serializable list of dicts."""
-    results = [dict(row) for row in query_job]
-    for r in results:
-        for k, v in r.items():
+def _sanitize_rows(
+    query_job: bigquery.QueryJob, max_rows: int = MAX_ROW_LIMIT
+) -> list[dict[str, Any]]:
+    """Converts BigQuery RowIterator to a JSON-serializable list of dicts with memory and row caps.
+
+    Args:
+        query_job: Executed BigQuery QueryJob.
+        max_rows: Hard ceiling on rows materialized in memory.
+
+    Returns:
+        List of sanitized dictionary rows.
+    """
+    results: list[dict[str, Any]] = []
+    for count, row in enumerate(query_job):
+        if count >= max_rows:
+            break
+        row_dict = dict(row)
+        for k, v in row_dict.items():
             if v is not None and not isinstance(v, (str, int, float, bool)):
-                r[k] = str(v)
+                row_dict[k] = str(v)
+        results.append(row_dict)
     return results
+
+
+def _clamp_bounds(limit: int, offset: int) -> tuple[int, int]:
+    """Clamps user/LLM supplied limit and offset within safe system bounds."""
+    safe_limit = min(max(1, limit), MAX_ROW_LIMIT)
+    safe_offset = max(0, offset)
+    return safe_limit, safe_offset
 
 
 def audit_credential_recycling(
@@ -49,47 +76,57 @@ def audit_credential_recycling(
 ) -> str:
     """Audits Medicaid applications to find credential recycling (shared USERNAME or PASSWORD across distinct NUM_CASE).
 
+    Filters out empty strings, whitespace, and placeholder defaults to prevent false positive clusters.
+
     Args:
-        min_cases: Minimum number of distinct cases sharing credentials to flag (default: 2).
-        limit: Maximum number of rows to return (default: 50).
+        min_cases: Minimum number of distinct cases sharing credentials to flag (default: 2, min: 2).
+        limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
     Returns:
         JSON string containing the flagged application records.
     """
+    safe_limit, safe_offset = _clamp_bounds(limit, offset)
+    safe_min_cases = max(2, min_cases)
+
     client = get_bq_client()
     sql = f"""
     WITH recycled_users AS (
-        SELECT USERNAME
+        SELECT LOWER(TRIM(USERNAME)) AS norm_username
         FROM `{FULL_TABLE_REF}`
         WHERE USERNAME IS NOT NULL
-        GROUP BY USERNAME
+          AND TRIM(USERNAME) != ''
+          AND LOWER(TRIM(USERNAME)) NOT IN ('n/a', 'na', 'none', 'null', 'unknown')
+        GROUP BY norm_username
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     ),
     recycled_passwords AS (
-        SELECT PASSWORD
+        SELECT TRIM(PASSWORD) AS norm_password
         FROM `{FULL_TABLE_REF}`
         WHERE PASSWORD IS NOT NULL
-        GROUP BY PASSWORD
+          AND TRIM(PASSWORD) != ''
+          AND LOWER(TRIM(PASSWORD)) NOT IN ('n/a', 'na', 'none', 'null', 'unknown')
+        GROUP BY norm_password
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     )
     SELECT t.*
     FROM `{FULL_TABLE_REF}` t
-    WHERE t.USERNAME IN (SELECT USERNAME FROM recycled_users)
-       OR t.PASSWORD IN (SELECT PASSWORD FROM recycled_passwords)
+    WHERE LOWER(TRIM(t.USERNAME)) IN (SELECT norm_username FROM recycled_users)
+       OR TRIM(t.PASSWORD) IN (SELECT norm_password FROM recycled_passwords)
     ORDER BY t.USERNAME, t.PASSWORD
     LIMIT @limit OFFSET @offset
     """
     job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
         query_parameters=[
-            bigquery.ScalarQueryParameter("min_cases", "INT64", min_cases),
-            bigquery.ScalarQueryParameter("limit", "INT64", limit),
-            bigquery.ScalarQueryParameter("offset", "INT64", offset),
-        ]
+            bigquery.ScalarQueryParameter("min_cases", "INT64", safe_min_cases),
+            bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
+            bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
+        ],
     )
     try:
         query_job = client.query(sql, job_config=job_config)
-        return json.dumps(_sanitize_rows(query_job))
+        return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
     except Exception as e:
         logger.error("Error executing credential recycling audit: %s", type(e).__name__)
         return json.dumps(
@@ -102,39 +139,47 @@ def audit_address_clustering(
 ) -> str:
     """Audits Medicaid applications to find address clustering (same ADR_STREET_1 across multiple distinct NUM_CASE).
 
+    Normalizes whitespace and casing, and filters out empty or placeholder addresses.
+
     Args:
-        min_cases: Minimum number of distinct cases at the same address to flag (default: 3).
-        limit: Maximum number of rows to return (default: 50).
+        min_cases: Minimum number of distinct cases at the same address to flag (default: 3, min: 2).
+        limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
     Returns:
         JSON string containing the flagged application records.
     """
+    safe_limit, safe_offset = _clamp_bounds(limit, offset)
+    safe_min_cases = max(2, min_cases)
+
     client = get_bq_client()
     sql = f"""
     WITH clustered_addrs AS (
-        SELECT ADR_STREET_1
+        SELECT LOWER(TRIM(ADR_STREET_1)) AS norm_addr
         FROM `{FULL_TABLE_REF}`
         WHERE ADR_STREET_1 IS NOT NULL
-        GROUP BY ADR_STREET_1
+          AND TRIM(ADR_STREET_1) != ''
+          AND LOWER(TRIM(ADR_STREET_1)) NOT IN ('n/a', 'na', 'none', 'null', 'unknown', 'homeless', 'po box')
+        GROUP BY norm_addr
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     )
     SELECT t.*
     FROM `{FULL_TABLE_REF}` t
-    WHERE t.ADR_STREET_1 IN (SELECT ADR_STREET_1 FROM clustered_addrs)
+    WHERE LOWER(TRIM(t.ADR_STREET_1)) IN (SELECT norm_addr FROM clustered_addrs)
     ORDER BY t.ADR_STREET_1
     LIMIT @limit OFFSET @offset
     """
     job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
         query_parameters=[
-            bigquery.ScalarQueryParameter("min_cases", "INT64", min_cases),
-            bigquery.ScalarQueryParameter("limit", "INT64", limit),
-            bigquery.ScalarQueryParameter("offset", "INT64", offset),
-        ]
+            bigquery.ScalarQueryParameter("min_cases", "INT64", safe_min_cases),
+            bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
+            bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
+        ],
     )
     try:
         query_job = client.query(sql, job_config=job_config)
-        return json.dumps(_sanitize_rows(query_job))
+        return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
     except Exception as e:
         logger.error("Error executing address clustering audit: %s", type(e).__name__)
         return json.dumps(
@@ -146,39 +191,45 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
     """Audits Medicaid applications to find pregnant members (CDE_CAT_REL = 'CNF') sharing first names and birth years.
 
     Args:
-        limit: Maximum number of rows to return (default: 50).
+        limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
     Returns:
         JSON string containing matching records.
     """
+    safe_limit, safe_offset = _clamp_bounds(limit, offset)
+
     client = get_bq_client()
     sql = f"""
     WITH pregnant_clusters AS (
-        SELECT NAM_FIRST, SUBSTR(CAST(DTE_BIRTH AS STRING), 1, 4) as birth_year
+        SELECT LOWER(TRIM(NAM_FIRST)) as norm_first, SUBSTR(CAST(DTE_BIRTH AS STRING), 1, 4) as birth_year
         FROM `{FULL_TABLE_REF}`
-        WHERE CDE_CAT_REL = 'CNF' AND NAM_FIRST IS NOT NULL AND DTE_BIRTH IS NOT NULL
-        GROUP BY NAM_FIRST, birth_year
+        WHERE CDE_CAT_REL = 'CNF'
+          AND NAM_FIRST IS NOT NULL
+          AND TRIM(NAM_FIRST) != ''
+          AND DTE_BIRTH IS NOT NULL
+        GROUP BY norm_first, birth_year
         HAVING COUNT(*) > 1
     )
     SELECT t.*
     FROM `{FULL_TABLE_REF}` t
     INNER JOIN pregnant_clusters pc
-        ON t.NAM_FIRST = pc.NAM_FIRST
+        ON LOWER(TRIM(t.NAM_FIRST)) = pc.norm_first
        AND SUBSTR(CAST(t.DTE_BIRTH AS STRING), 1, 4) = pc.birth_year
     WHERE t.CDE_CAT_REL = 'CNF'
     ORDER BY t.NAM_FIRST, t.DTE_BIRTH
     LIMIT @limit OFFSET @offset
     """
     job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
         query_parameters=[
-            bigquery.ScalarQueryParameter("limit", "INT64", limit),
-            bigquery.ScalarQueryParameter("offset", "INT64", offset),
-        ]
+            bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
+            bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
+        ],
     )
     try:
         query_job = client.query(sql, job_config=job_config)
-        return json.dumps(_sanitize_rows(query_job))
+        return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
     except Exception as e:
         logger.error("Error executing pregnant member audit: %s", type(e).__name__)
         return json.dumps(
@@ -205,39 +256,47 @@ def filter_applications(
         email: Case applicant EMAIL_ADDRESS.
         city: Case applicant ADR_CITY.
         zip_code: Case applicant ADR_ZIP.
-        limit: Maximum number of rows to return (default: 50).
+        limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
     Returns:
         JSON string containing the queried records.
     """
+    safe_limit, safe_offset = _clamp_bounds(limit, offset)
+
     client = get_bq_client()
     conditions = []
     params: list[bigquery.ScalarQueryParameter] = [
-        bigquery.ScalarQueryParameter("limit", "INT64", limit),
-        bigquery.ScalarQueryParameter("offset", "INT64", offset),
+        bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
+        bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
     ]
 
     if case_number:
-        conditions.append("NUM_CASE = @case_number")
+        conditions.append("TRIM(NUM_CASE) = TRIM(@case_number)")
         params.append(
-            bigquery.ScalarQueryParameter("case_number", "STRING", case_number)
+            bigquery.ScalarQueryParameter("case_number", "STRING", case_number.strip())
         )
     if first_name:
-        conditions.append("LOWER(NAM_FIRST) = LOWER(@first_name)")
-        params.append(bigquery.ScalarQueryParameter("first_name", "STRING", first_name))
+        conditions.append("LOWER(TRIM(NAM_FIRST)) = LOWER(TRIM(@first_name))")
+        params.append(
+            bigquery.ScalarQueryParameter("first_name", "STRING", first_name.strip())
+        )
     if last_name:
-        conditions.append("LOWER(NAM_LAST) = LOWER(@last_name)")
-        params.append(bigquery.ScalarQueryParameter("last_name", "STRING", last_name))
+        conditions.append("LOWER(TRIM(NAM_LAST)) = LOWER(TRIM(@last_name))")
+        params.append(
+            bigquery.ScalarQueryParameter("last_name", "STRING", last_name.strip())
+        )
     if email:
-        conditions.append("LOWER(EMAIL_ADDRESS) = LOWER(@email)")
-        params.append(bigquery.ScalarQueryParameter("email", "STRING", email))
+        conditions.append("LOWER(TRIM(EMAIL_ADDRESS)) = LOWER(TRIM(@email))")
+        params.append(bigquery.ScalarQueryParameter("email", "STRING", email.strip()))
     if city:
-        conditions.append("LOWER(ADR_CITY) = LOWER(@city)")
-        params.append(bigquery.ScalarQueryParameter("city", "STRING", city))
+        conditions.append("LOWER(TRIM(ADR_CITY)) = LOWER(TRIM(@city))")
+        params.append(bigquery.ScalarQueryParameter("city", "STRING", city.strip()))
     if zip_code:
-        conditions.append("ADR_ZIP = @zip_code")
-        params.append(bigquery.ScalarQueryParameter("zip_code", "STRING", zip_code))
+        conditions.append("TRIM(CAST(ADR_ZIP AS STRING)) = TRIM(@zip_code)")
+        params.append(
+            bigquery.ScalarQueryParameter("zip_code", "STRING", str(zip_code).strip())
+        )
 
     where_clause = " AND ".join(conditions) if conditions else "1=1"
     sql = f"""
@@ -246,10 +305,12 @@ def filter_applications(
     WHERE {where_clause}
     LIMIT @limit OFFSET @offset
     """
-    job_config = bigquery.QueryJobConfig(query_parameters=params)
+    job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED, query_parameters=params
+    )
     try:
         query_job = client.query(sql, job_config=job_config)
-        return json.dumps(_sanitize_rows(query_job))
+        return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
     except Exception as e:
         logger.error("Error executing application filter: %s", type(e).__name__)
         return json.dumps({"error": "An error occurred while querying applications."})
