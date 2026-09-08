@@ -19,7 +19,7 @@ from typing import Any
 
 from google.cloud import bigquery
 
-from app.config import FULL_TABLE_REF, PROJECT_ID
+from .config import FULL_TABLE_REF, PROJECT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +34,7 @@ def _sanitize_rows(query_job: bigquery.QueryJob) -> list[dict[str, Any]]:
     return results
 
 
-def audit_credential_recycling(
-    min_cases: int = 2, limit: int = 50, offset: int = 0
-) -> str:
+def audit_credential_recycling(min_cases: int = 2, limit: int = 50, offset: int = 0) -> str:
     """Audits Medicaid applications to find credential recycling (shared USERNAME or PASSWORD across distinct NUM_CASE).
 
     Args:
@@ -82,14 +80,10 @@ def audit_credential_recycling(
         return json.dumps(_sanitize_rows(query_job))
     except Exception as e:
         logger.error("Error running audit_credential_recycling: %s", e)
-        return json.dumps(
-            {"error": "An error occurred while analyzing credential recycling."}
-        )
+        return json.dumps({"error": "An error occurred while analyzing credential recycling."})
 
 
-def audit_address_clustering(
-    min_cases: int = 3, limit: int = 50, offset: int = 0
-) -> str:
+def audit_address_clustering(min_cases: int = 3, limit: int = 50, offset: int = 0) -> str:
     """Audits Medicaid applications to find address clustering (same ADR_STREET_1 across multiple distinct NUM_CASE).
 
     Args:
@@ -127,9 +121,7 @@ def audit_address_clustering(
         return json.dumps(_sanitize_rows(query_job))
     except Exception as e:
         logger.error("Error running audit_address_clustering: %s", e)
-        return json.dumps(
-            {"error": "An error occurred while analyzing address clustering."}
-        )
+        return json.dumps({"error": "An error occurred while analyzing address clustering."})
 
 
 def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
@@ -171,9 +163,7 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
         return json.dumps(_sanitize_rows(query_job))
     except Exception as e:
         logger.error("Error running audit_pregnant_members: %s", e)
-        return json.dumps(
-            {"error": "An error occurred while analyzing pregnant member records."}
-        )
+        return json.dumps({"error": "An error occurred while analyzing pregnant member records."})
 
 
 def filter_applications(
@@ -210,9 +200,7 @@ def filter_applications(
 
     if case_number:
         conditions.append("NUM_CASE = @case_number")
-        params.append(
-            bigquery.ScalarQueryParameter("case_number", "STRING", case_number)
-        )
+        params.append(bigquery.ScalarQueryParameter("case_number", "STRING", case_number))
     if first_name:
         conditions.append("LOWER(NAM_FIRST) = LOWER(@first_name)")
         params.append(bigquery.ScalarQueryParameter("first_name", "STRING", first_name))
@@ -263,20 +251,12 @@ def execute_read_only_bigquery_sql(sql_query: str) -> str:
     """
     stripped_query = sql_query.strip()
     # 1. Enforce SELECT only
-    if not stripped_query.lower().startswith(
-        "select"
-    ) and not stripped_query.lower().startswith("with"):
-        return json.dumps(
-            {"error": "Only read-only SELECT or WITH statements are permitted."}
-        )
+    if not stripped_query.lower().startswith("select") and not stripped_query.lower().startswith("with"):
+        return json.dumps({"error": "Only read-only SELECT or WITH statements are permitted."})
 
     # 2. Block DML / DDL / Administrative SQL
     if FORBIDDEN_SQL_KEYWORDS.search(stripped_query):
-        return json.dumps(
-            {
-                "error": "Disallowed SQL statement detected. Only read-only operations are supported."
-            }
-        )
+        return json.dumps({"error": "Disallowed SQL statement detected. Only read-only operations are supported."})
 
     client = bigquery.Client(project=PROJECT_ID)
     try:

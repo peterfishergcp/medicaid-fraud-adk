@@ -18,8 +18,8 @@ from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from app.config import FULL_TABLE_REF
-from app.tools import (
+from .config import FULL_TABLE_REF
+from .tools import (
     audit_address_clustering,
     audit_credential_recycling,
     audit_pregnant_members,
@@ -49,7 +49,8 @@ You are the Primary Medicaid Application Auditor. Your mission is to query BigQu
 primary_fraud_auditor = Agent(
     name="primary_fraud_auditor",
     model=Gemini(
-        model="gemini-3.7-flash",
+        model="gemini-3.8-flash",
+        client_options={"location": "global"},
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=PRIMARY_AUDITOR_INSTRUCTION,
@@ -87,7 +88,8 @@ If responses are batched, end with: 'Would you like me to display the next batch
 fraud_verification_judge = Agent(
     name="fraud_verification_judge",
     model=Gemini(
-        model="gemini-3.7-flash",
+        model="gemini-3.8-flash",
+        client_options={"location": "global"},
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=JUDGE_INSTRUCTION,
