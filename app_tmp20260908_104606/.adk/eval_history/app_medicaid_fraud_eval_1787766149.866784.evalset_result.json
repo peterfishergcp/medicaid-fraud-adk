@@ -1,0 +1,1264 @@
+{
+  "eval_set_result_id": "app_medicaid_fraud_eval_1787766149.866784",
+  "eval_set_result_name": "app_medicaid_fraud_eval_1787766149.866784",
+  "eval_set_id": "medicaid_fraud_eval",
+  "eval_case_results": [
+    {
+      "eval_set_file": "medicaid_fraud_eval",
+      "eval_set_id": "medicaid_fraud_eval",
+      "eval_id": "address_clustering_query",
+      "final_eval_status": 1,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "rubric_based_final_response_quality_v1",
+          "threshold": 0.8,
+          "criterion": {
+            "threshold": 0.8,
+            "judgeModelOptions": {
+              "judgeModel": "gemini-3-flash-preview",
+              "numSamples": 1
+            },
+            "rubrics": [
+              {
+                "rubricId": "relevance",
+                "rubricContent": {
+                  "textProperty": "The response directly addresses the user's query."
+                }
+              },
+              {
+                "rubricId": "helpfulness",
+                "rubricContent": {
+                  "textProperty": "The response is helpful and provides useful information."
+                }
+              }
+            ]
+          },
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": [
+              {
+                "rubric_id": "relevance",
+                "rationale": "This is an aggregated score derived from individual entries. Please refer to individual entries in each invocation for actual rationale from the model.",
+                "score": 1.0
+              },
+              {
+                "rubric_id": "helpfulness",
+                "rationale": "This is an aggregated score derived from individual entries. Please refer to individual entries in each invocation for actual rationale from the model.",
+                "score": 1.0
+              }
+            ]
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Check for address clustering in the application data where more than 2 cases share the same street address.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "| NUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Violation Detail & Verification Summary | Risk Severity |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | lindamil65 | xcmichdtod | linda.miller6@yahoo.com | 9025664961 | 20260815 | LINDA | MILLER | 19700813 | F | 4161 WBHRXS DR | *null* | MOORE | 65863 | CNF | Address Cluster: 1 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |\n| **YA7FC2H** | B122535054 | elizabethjac80 | nbpmuiohaf | elizabeth.jackson8@outlook.com | 1457338934 | 20260815 | ELIZABETH | JACKSON | 19720920 | F | 4161 WBHRXS DR | *null* | MOORE | 78075 | CNF | Address Cluster: 2 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |\n| **9QBCDRC** | B765898859 | williamsmi37 | hykphffzho | william.smith7@gmail.com | 346447042 | 20260815 | WILLIAM | SMITH | 19750426 | F | 4161 WBHRXS DR | *null* | OKLAHOMA CITY | 29674 | CNF | Address Cluster: 3 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |\n| **5GW4DRP** | B234847074 | barbaraher76 | wgmjumtryn | barbara.hernandez1@yahoo.com | 8970321863 | 20260815 | BARBARA | HERNANDEZ | 19790923 | F | 4161 WBHRXS DR | *null* | TULSA | 77758 | CNF | Address Cluster: 4 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |",
+                  "thought": null,
+                  "thought_signature": "AY89a1_UvAxrLYDkb-3h4yZXh9SQAw0sYbVTLp44e-el-c9XheXBmj9acs6m5P_vMNOhLONIzmr3zpxC0F0ynV2jEB0z5uYRXu-Yj_TWzJiomb1hzfUYYIXPsHeGPSlmHENjoaM7miqf1SM4Gndh3UgUCPGj-fOS3hx9I2Qo2ktfTqqJoz8Ev4WKEhSKKed7haqWqeH5euIPbtmO_UZ7CInuCkKP-RSY-cxAAshPOb88izAtv9DknNMJncmJ2FxnKvUNXp2PGVpCNdp6wwEQJUc8PbEU7eAJK46nX60WPWeqp6qvt9z3mFAdvOEmivtaeUUQqiQabOvvy0jtPaIaiMyOIXJ-xdXymVefQdY0HMNL8hR-q3d4okVz2WAkeZpQvm1Qs_5bhoXR8YIg7Uvj97qOHWoLZWGtfMM3ExrWtd8Ac7FDF2eYRSeSgwtyvCm3egX-M6J_zqoHk0S7ab-IJExkCg70JYZPmbNRH7_P57CY3mUNGJZQwJBL4Z3gwJEpvigXFnKj4l5wsWBERhC5q71VeEptsGgLVKcGuSISh2LcSpky4eda9RG3HoJ_2gZ-z61tEEG3zj_bCsgA2PP01heDQwaDW_8JnIL06NKd41c5eGgosIWIqFvjrFwzJXU1Yp19INWeQYgtHiULK4boNG3GsiJgdhOgMX24qRd7Wu3kkYG1goGBMZBfwVxUAJQojdyed9s24J3gGzQYzS7ZnccHY02_AdskRvIKFci2vZoABgFwszKZovU0ynWSPJlM2z7oC-Xue3l11NssMuRBgnapnh4KYvZQGPhXhqSQiGa5X95Rlmllr8pAeKLGt-dY-1d8HLlfMGyoF1EgDQDdiqu5i88lCXSZQY0sFVtIBkFgaOZuJQ7l42fdmeJJeAO-eKNcHcFDnkqSMK7xBsgLTWjzXI4TbUtwEH1VTDdkz5I-fW2ezyGnnxdgrctBywycRrNOtbyyi7VyGh5_jnjZcAfOI_5k-v5LNumTOMW2q7xvant8fhruopk9fR6yFwkCgNHFPpk27THHxVSW__HyKJmBFKI2yzQCRqQ1Ju4qK9xUF-424yJCaHDSXqZ6Di_3UIN2jLhj28Ght1GE4HWxeEXojkP_AAOYquDVcxqs38BtrjD1cKU1-pOCiVdX4qv8KhRqbXKxQ7tDRPVLAfbryV8cgBEoaAfRuYjncQwXIqEc8wHHZ8lxaClMbdR_cm-SOHl6wlzExlCATn2DQveAgbdX-s00cSW0d0RiRi2sPmkkSqeDH4nuO_t3sNs883rfPXBpjh_yxIpxzNJopUkw9UzGbO1vGlRLCqGtqMsd0Tbei8lQL4aCrazuAnva4Cq2Wo4XVuTqDeLZokH2HQtrcJ_s-EAKDIQCglMOn31OlWJRCUr8fQxykoHxQ5tgDgbaThegtK7ScLiron3LE7968RUs_r4Pgs8vyncKv7P4ZbN-wTi0ptFITpClkvSFB1M1Zp0OcLpOwWyj6CD1gPY-MANVkeVrpbFaVL4x9KWKhseE9g4EOx1laPjzf37D32lbLB2yJnkaPyQmaodpmwhF9SD7QmZrt7jrn3J5RIbg6mrIotlwL7flyloTi_jSrbIJZGFLTfvNIwoKNXsI7fFjQayAfvzbuf1cQNxYHkpSqBAMd9022q0rDbeMNFbMKrnaILCgqsTucSklDFuGBCcPKODGop3-IPm3GIBItlrSK-293kiPNLKOx_yeM8pANaQY3PYt3dLYA25BlvLR0ALKLCaOM9U6ao2Do3fWhm7CVL84eTXst0vgjRa1lNne_IKEbexhvDAZLcrmK_P41Q7yRQbJhTTBsvCWynoA0M_7YRwQnDyl5dwlLTDeD5a9NjZCdgw8JH1HvsQQrW-aTVliol_QpyYLEYU9JUdQuq1oGOYrgmcSp2L9C6N4z24tIMxFc74JfDy5U4RdLAFCK096-4GDpAMl6GlrQo0RJkvs6n4YG_JPsonx3-s2OAISc-BN7DMJhAGc4AHHdE2w8xsCsBPNH8LsK4aDx_hfptCftmonYk9p9NTUyElepMyt99Pzhy5plQXVQoD__tCdkvDG73ciBuIeg_tgaer5UdXlytabMuvFKgloKCOd9hFmsoqZzwS4lqYI5sdqIWAl5tpELKmspmybuy74cDxUDtxVH0UB81A4zWcK5v_oCEKUM-yzbbLjFh2GIFlsT69MEl4ywn0e7nRoC_vur4km1WV2Q1Ude-94Nwkycz6shFGBpI10ZaYtG-qaXY5-5E1CDg4Gc5a38AEmdSSB3MKnEpVfDISHeN54BXqnisLa8__3cyxuznoLU0K0hfRVEfGnMQBIPr8cmcjbERlou0FP6Gc7cuGwHk57vj0-9rtgnvH1s8-ONx_qvkj53ZsWYGAcDU619NwUY8TRCN15iPY3t24C_2Z3XTvFXnNq5WDWaffSRO5xskEYUkrPM88r8zSgZ7XcTk8PZLmX6QKy5q37X81-DcHNe9yoYWM5ck9j1RwkmKF2LoUhohmyp1WOXUDoQ8wT3CfrRzaGxopMCta5F-UY7YeQqNGmoawNPBfMFqMi-3V2oHLReNp546G_83y3UWO1yS2hOdxGZNpilAzV58tH7e4x5O5zgFBUPzvZ09ecWqK11gs2yKVB-bdIFHdS8rhvZ2E7omfYLsYuyXat1yD2ETLzUMMcZmOqSn1GvegOctwP0Akf9wCW8XcJ2E0t7aigcDoxPEK02DjgqwDJbQwzURe7dZQWn_1IeH1csAuSJG8EXDzPYEDAgkT04HOBdDrDKcf9q2dLUluwLvjSL2tEDUN3_TFjCWJ3D9eBriQ1rCcT8BAozqzVrTha9aLKcfn_0LdzmxKbOkDN1REceT1FFxF1pDIyYyzMlJZ5I-XWbkHfzAgeeZ7r8AFtWGIZxxB9-mbQfxAjlSrBkgw5MBCSdZlQbB4rKVnJnEGsAjOdVYxiBp4aHa-TT7l8c-xRhUnfFlTxeRi2mgoh-nDjdj2_9iLs561rnNK1JmtMGPhuO9qa3qP5at97L4OrmwP5L_WQg_ZjRsf2_ti0aX2HgZmEk4y87yxFgdsugwzYZJIN9b0C8p_LkHsBEsbRb5bNJ6DaxD9h_7ubKdb3R5muEdNF__JmRPCQ1vcSvcR2LAweTrPMJlLzywL_HpRjjUzA-b-prxOOOqYX7Wyue-FoEkGUnZh2-ijVlBVDKlvJherrxIJO9rnkG2JxmQkkFE29-e4JVMWhW-LuHj_E0DHz0luzaFI6KuDxhxR1T82uubL0S9TOP0n7--ZmnXqkhp9HH1AR3vNyhD89fDmko9YGwkFaCJddkIu0lxJHZAgEvXxcCyXbn_5u9CYA9Pc5V7eeiR7dbpQwr1E3LJloFuDIGJryjMpD4TQ29X-DnYwKYtb5p28d3dB308gXCE-GaVt_HzNuvEzJwNslsA89f3kUiiAh0nhNkYwdgFxAU9ccQcxNjSfiKqUFhU-Z6FySUGkU9qnsELKXK30a-JOY20fjYlJ5HDAgQL1LfCsP9lcZJ9gy0AXW5oqpDNhDKeM8pASqd0i-VO4OZ6UO68E7_FISElN5q09CcNPw0BSIx92r8A4qHED066p9fSPTP6NMyX_CSO301YpV-dvtHBP1uMfWElEV4w1kN7ROiSbVE8OHguJVPcCuxRIOtJBpcy3g74lvcS11M4ojNFmfP5qkCvEYAsp_ZzS43x6QcDHzADMqqcQXqkz4kpHRuQ==",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "primary_fraud_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_1109617",
+                          "args": {
+                            "query_type": "address_clustering"
+                          },
+                          "name": "query_syntheticdatafraud",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "AY89a1_yHeVfWh8nXgVr-TL2gdwIrprnejxGFRDV6IgDsmSPfm0XZhubo6iUpYz9MoJwp3yjQvNiR4In27cyf_AlwPeJc9WcUla2l-p5wHS1faVVELkfxkG70QfHl9ztmM3ovVTJH0umjwfvZPdrBr5gQ8ONqSZ3bStJgf3wlGHaLlLy9MRmZXwu_flvlD1Z51CMoHCbuQDQYu3aIZDT7I67U2VmAPUTYaRkjbjxKIu44JS4svqfKd1n9cP6fwIzfsxm08eecPcBAnle0oeHpOfQUmeHC4sg9V1_ZSY-7IxWEfPt8kY9I7z3AvkrVm3EyvYDf7M1z3WZ3K2mX_htKkpnPkcWu6-Gr5OqCSz3FO03sbTSPfAOvc_ajGvrjk4g0tFNhXvmag2O97B6yEzckt_QiOspNhCQVn77JrJxR05M9D2-vCNjkEMpR-nAVsiQliBUJphNf3XxADPnd8fC53az2Ar7Lof8uNhN_opHd5dc2PlerCmxI202ycpyUle1_m7tDaZY525KmBm268O1FHXTiewOR55Q4dpbvDCP-d-0ZaAeb6Zlp-EUY2UB-Z3nK3eWmyAAXvFyu6cQBhjzJvomYPR1l2ccOT3GRhi5MMP58guGbOZdE-JqYSnp4uqc_5mstZ8JrnEX7iATnfG_SV2nkETO-xWkMTDA2eEy5FZoT9uhCPIHw2Bsj79Ojxx2V3gWhbGfKsb5LkeG-2DeIoBwM0Ji_5nCyPWsQLNN7vCHLb6BKPjTCgqX31CYv4bRAnkAqVJAsIsZ7Twm_uM0",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                },
+                {
+                  "author": "primary_fraud_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_1109617",
+                          "name": "query_syntheticdatafraud",
+                          "response": {
+                            "result": "[{\"NUM_CASE\": \"OO8W98F\", \"ID_MEDICAID\": \"B499510925\", \"USERNAME\": \"lindamil65\", \"PASSWORD\": \"xcmichdtod\", \"EMAIL_ADDRESS\": \"linda.miller6@yahoo.com\", \"PHONE_NUMBER\": 9025664961, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"LINDA\", \"NAM_LAST\": \"MILLER\", \"DTE_BIRTH\": 19700813, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 65863, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}, {\"NUM_CASE\": \"YA7FC2H\", \"ID_MEDICAID\": \"B122535054\", \"USERNAME\": \"elizabethjac80\", \"PASSWORD\": \"nbpmuiohaf\", \"EMAIL_ADDRESS\": \"elizabeth.jackson8@outlook.com\", \"PHONE_NUMBER\": 1457338934, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"ELIZABETH\", \"NAM_LAST\": \"JACKSON\", \"DTE_BIRTH\": 19720920, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 78075, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}, {\"NUM_CASE\": \"9QBCDRC\", \"ID_MEDICAID\": \"B765898859\", \"USERNAME\": \"williamsmi37\", \"PASSWORD\": \"hykphffzho\", \"EMAIL_ADDRESS\": \"william.smith7@gmail.com\", \"PHONE_NUMBER\": 346447042, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"WILLIAM\", \"NAM_LAST\": \"SMITH\", \"DTE_BIRTH\": 19750426, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"OKLAHOMA CITY\", \"ADR_ZIP\": 29674, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}, {\"NUM_CASE\": \"5GW4DRP\", \"ID_MEDICAID\": \"B234847074\", \"USERNAME\": \"barbaraher76\", \"PASSWORD\": \"wgmjumtryn\", \"EMAIL_ADDRESS\": \"barbara.hernandez1@yahoo.com\", \"PHONE_NUMBER\": 8970321863, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"BARBARA\", \"NAM_LAST\": \"HERNANDEZ\", \"DTE_BIRTH\": 19790923, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"TULSA\", \"ADR_ZIP\": 77758, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}]"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  }
+                },
+                {
+                  "author": "primary_fraud_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_416788",
+                          "args": {
+                            "sql_query": "SELECT ADR_STREET_1, COUNT(DISTINCT NUM_CASE) AS case_count, COUNT(*) as record_count FROM `ai-hub-459714.frauddector.syntheticdatafraud` GROUP BY ADR_STREET_1 HAVING COUNT(DISTINCT NUM_CASE) > 2"
+                          },
+                          "name": "execute_bigquery_sql",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "AY89a18XxZX4KH1dlVgImgHmI1dO7Dx_-gkzAl4MtC2cEhkmez26A6OWaNz5PzHYW1Z93yE-Z0e3viLcbE3fUWslFMy06D8jaC0udqTlE4wgD9Gn1v9QwhN9jRq4wungGTSGcV8G6IiHs1TexGgRa5hmWFfYdwPyLdJ-fxOtAFD7FiotQR_5if6d3icJf6iFMODtQz0LRAyEDvCID7t5W8JQRq5EqOGIOnkLQoroCXgC",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                },
+                {
+                  "author": "primary_fraud_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_416788",
+                          "name": "execute_bigquery_sql",
+                          "response": {
+                            "result": "[{\"ADR_STREET_1\": \"4161 WBHRXS DR\", \"case_count\": 4, \"record_count\": 4}]"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  }
+                },
+                {
+                  "author": "primary_fraud_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "### Medicaid Application Fraud Audit: Address Clustering Detection\n\n**Detection Rule:** More than 2 distinct `NUM_CASE` sharing the same `ADR_STREET_1`.\n\n---\n\n#### Summary of Findings\n- **Flagged Address:** `4161 WBHRXS DR`\n- **Total Distinct Cases:** 4\n- **Suspicious Indicators:**\n  - 4 distinct applicants/cases registered under the exact same street address.\n  - Inconsistent cities and ZIP codes provided for the identical street address (`MOORE`, `OKLAHOMA CITY`, `TULSA`).\n  - Identical logon date (`2026-08-15`) across all applications.\n\n---\n\n#### Flagged Records\n\n| `NUM_CASE` | `ID_MEDICAID` | Name | `DTE_BIRTH` | `ADR_STREET_1` | `ADR_CITY` | `ADR_ZIP` | `USERNAME` | `EMAIL_ADDRESS` |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | LINDA MILLER | 1970-08-13 | 4161 WBHRXS DR | MOORE | 65863 | `lindamil65` | `linda.miller6@yahoo.com` |\n| **YA7FC2H** | B122535054 | ELIZABETH JACKSON | 1972-09-20 | 4161 WBHRXS DR | MOORE | 78075 | `elizabethjac80` | `elizabeth.jackson8@outlook.com` |\n| **9QBCDRC** | B765898859 | WILLIAM SMITH | 1975-04-26 | 4161 WBHRXS DR | OKLAHOMA CITY | 29674 | `williamsmi37` | `william.smith7@gmail.com` |\n| **5GW4DRP** | B234847074 | BARBARA HERNANDEZ | 1979-09-23 | 4161 WBHRXS DR | TULSA | 77758 | `barbaraher76` | `barbara.hernandez1@yahoo.com` |",
+                        "thought": null,
+                        "thought_signature": "AY89a1-9NuRDyhgUcX4u5sNPz0qfrG_5Fr4tM4jpePbtN_lQGd3R8KQuu2JiYenphtcIoUC14ZqVjl959vFGzlOfEu1bFIYXlY9IO9wObG2BhyUQSYq1_H5RGcsmhAtH2EHQWl7NvjRNM74N_3Lo0pak36-7LWixnpF1vtFeB8LfH9KnvaDRxQ9FW88KEU-EucTOxiSsTYhAYC2tNIdKnaVDRvbk5RdTh0OxxEkIXsBbOGh8Jw-YYxV-v_EREe_DLn1Mw0kdgPPQCrd9vmui7qJiJvIbJGLtEkAwq4KccJidBdashUqSQ4UarN8DUbplmcpja-UL1Rw_0P0H-cpgA0NLIFIrfgsuPXw=",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                }
+              ]
+            },
+            "creation_timestamp": 1787766098.328064,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "primary_fraud_auditor": {
+                  "name": "primary_fraud_auditor",
+                  "instructions": "\n# Role\nYou are the Primary Medicaid Application Auditor. Your mission is to query BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and detect suspicious or anomalous Medicaid application records.\n\n# Core Detection Rules\n1. Credential Recycling: Identical PASSWORD or USERNAME across multiple distinct NUM_CASE.\n2. Address Clustering: More than 2 distinct NUM_CASE with the same ADR_STREET_1.\n3. Identity Mismatch: NAM_FIRST and NAM_LAST do not match or align with USERNAME, EMAIL_ADDRESS, or password.\n4. Sequential Clusters: ADR_STREET_1, EMAIL_ADDRESS, USERNAME, or PASSWORD following rapid incremental numeric sequences.\n5. Pregnant members: Same NAM_FIRST and same birth year (first 4 characters of DTE_BIRTH) with CDE_CAT_REL = 'CNF'.\n\n# Execution Guidelines\n- Query the BigQuery dataset using available tools (`query_syntheticdatafraud` or `execute_bigquery_sql`).\n- Compile all flagged rows into a initial structured Markdown draft.\n- Keep output concise (10-15 rows per response batch if large).\n\n\nYou are an agent. Your internal name is \"primary_fraud_auditor\".",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "google_maps": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Queries the Medicaid application dataset `ai-hub-459714.frauddector.syntheticdatafraud` in BigQuery.\n\n    Args:\n        query_type: Type of query analysis to run. Supported types:\n            - 'all': Fetch raw rows from syntheticdatafraud.\n            - 'credential_recycling': Find duplicate USERNAME or PASSWORD across distinct NUM_CASE.\n            - 'address_clustering': Find ADR_STREET_1 values with more than 2 distinct NUM_CASE.\n            - 'pregnant_members': Find members with CDE_CAT_REL = 'CNF' sharing NAM_FIRST and birth year (first 4 chars of DTE_BIRTH).\n            - 'custom': Custom filter supplied via custom_where_clause.\n        limit: Maximum number of rows to return (default: 50).\n        offset: Row offset for pagination (default: 0).\n        custom_where_clause: Optional SQL WHERE clause when query_type is 'custom'.\n\n    Returns:\n        JSON string containing the queried records or analytical matches.\n    ",
+                          "name": "query_syntheticdatafraud",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "query_type": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": "all",
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              },
+                              "limit": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 50,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "offset": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 0,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "custom_where_clause": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": true,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": null,
+                            "property_ordering": null,
+                            "required": null,
+                            "title": null,
+                            "type": "STRING"
+                          },
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Executes an arbitrary BigQuery SQL query against the dataset.\n\n    Args:\n        sql_query: Valid BigQuery Standard SQL string.\n\n    Returns:\n        JSON string containing the query results.\n    ",
+                          "name": "execute_bigquery_sql",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "sql_query": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "sql_query"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": null,
+                            "property_ordering": null,
+                            "required": null,
+                            "title": null,
+                            "type": "STRING"
+                          },
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_search_retrieval": null,
+                      "parallel_ai_search": null,
+                      "url_context": null,
+                      "mcp_servers": null,
+                      "exa_ai_search": null
+                    }
+                  ]
+                },
+                "fraud_verification_judge": {
+                  "name": "fraud_verification_judge",
+                  "instructions": "\n# Role\nYou are the Senior Medicaid Fraud Verification Auditor & Compliance Judge. Your job is to double-check and audit the draft findings provided by the Primary Auditor (### Medicaid Application Fraud Audit: Address Clustering Detection\n\n**Detection Rule:** More than 2 distinct `NUM_CASE` sharing the same `ADR_STREET_1`.\n\n---\n\n#### Summary of Findings\n- **Flagged Address:** `4161 WBHRXS DR`\n- **Total Distinct Cases:** 4\n- **Suspicious Indicators:**\n  - 4 distinct applicants/cases registered under the exact same street address.\n  - Inconsistent cities and ZIP codes provided for the identical street address (`MOORE`, `OKLAHOMA CITY`, `TULSA`).\n  - Identical logon date (`2026-08-15`) across all applications.\n\n---\n\n#### Flagged Records\n\n| `NUM_CASE` | `ID_MEDICAID` | Name | `DTE_BIRTH` | `ADR_STREET_1` | `ADR_CITY` | `ADR_ZIP` | `USERNAME` | `EMAIL_ADDRESS` |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | LINDA MILLER | 1970-08-13 | 4161 WBHRXS DR | MOORE | 65863 | `lindamil65` | `linda.miller6@yahoo.com` |\n| **YA7FC2H** | B122535054 | ELIZABETH JACKSON | 1972-09-20 | 4161 WBHRXS DR | MOORE | 78075 | `elizabethjac80` | `elizabeth.jackson8@outlook.com` |\n| **9QBCDRC** | B765898859 | WILLIAM SMITH | 1975-04-26 | 4161 WBHRXS DR | OKLAHOMA CITY | 29674 | `williamsmi37` | `william.smith7@gmail.com` |\n| **5GW4DRP** | B234847074 | BARBARA HERNANDEZ | 1979-09-23 | 4161 WBHRXS DR | TULSA | 77758 | `barbaraher76` | `barbara.hernandez1@yahoo.com` |) to ensure 100% precision, zero missed records, and clear risk classification.\n\n# Audit & Double-Check Criteria\n1. Accuracy Audit: Verify that every flagged record genuinely violates one of the 5 core fraud rules (Credential Recycling, Address Clustering, Identity Mismatch, Sequential Clusters, Pregnant Members).\n2. Completeness Check: Ensure no matching candidate records or edge cases were skipped.\n3. Severity Classification: Assign a Severity Rating to each flagged record:\n   - CRITICAL: Cross-case Credential Recycling or multi-case Address Clusters (>5 cases).\n   - HIGH: Address Clusters (3-5 cases) or Pregnant Member anomalies.\n   - MEDIUM: Identity Mismatch or Sequential Cluster anomalies.\n\n# Output Expectations\nFormat your final output as a professional Markdown table:\nNUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Violation Detail & Verification Summary | Risk Severity\n\nIf no records are found for a query, output: 'No violations detected for this criterion'.\nIf responses are batched, end with: 'Would you like me to display the next batch of findings?'\n\n\nYou are an agent. Your internal name is \"fraud_verification_judge\".",
+                  "tool_declarations": []
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Check for address clustering in the application data where more than 2 cases share the same street address.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": null,
+            "intermediate_data": null,
+            "creation_timestamp": 0.0,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "rubric_based_final_response_quality_v1",
+              "threshold": 0.8,
+              "criterion": {
+                "threshold": 0.8,
+                "judgeModelOptions": {
+                  "judgeModel": "gemini-3-flash-preview",
+                  "numSamples": 1
+                },
+                "rubrics": [
+                  {
+                    "rubricId": "relevance",
+                    "rubricContent": {
+                      "textProperty": "The response directly addresses the user's query."
+                    }
+                  },
+                  {
+                    "rubricId": "helpfulness",
+                    "rubricContent": {
+                      "textProperty": "The response is helpful and provides useful information."
+                    }
+                  }
+                ]
+              },
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": [
+                  {
+                    "rubric_id": "relevance",
+                    "rationale": "The final answer presents these four cases in a structured table, identifying them as part of an address cluster involving the street \"4161 WBHRXS DR\". This directly answers the user's request.",
+                    "score": 1.0
+                  },
+                  {
+                    "rubric_id": "helpfulness",
+                    "rationale": "The final answer organizes the raw data into a readable Markdown table, includes all relevant fields (NUM_CASE, ID_MEDICAID, etc.), and adds a \"Violation Detail & Verification Summary\" that explains why these rows were flagged (4 distinct cases at the same address) and notes further anomalies like conflicting city/ZIP metadata. This provides actionable and clear information for an auditor.",
+                    "score": 1.0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___27de8413-4590-4f88-a005-358dd6727179",
+      "session_details": {
+        "id": "___eval___session___27de8413-4590-4f88-a005-358dd6727179",
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {
+          "__llm_request_key__": "e2f62f57-1c69-4e0c-b86f-6fa14f9d8f1f",
+          "draft_findings": "### Medicaid Application Fraud Audit: Address Clustering Detection\n\n**Detection Rule:** More than 2 distinct `NUM_CASE` sharing the same `ADR_STREET_1`.\n\n---\n\n#### Summary of Findings\n- **Flagged Address:** `4161 WBHRXS DR`\n- **Total Distinct Cases:** 4\n- **Suspicious Indicators:**\n  - 4 distinct applicants/cases registered under the exact same street address.\n  - Inconsistent cities and ZIP codes provided for the identical street address (`MOORE`, `OKLAHOMA CITY`, `TULSA`).\n  - Identical logon date (`2026-08-15`) across all applications.\n\n---\n\n#### Flagged Records\n\n| `NUM_CASE` | `ID_MEDICAID` | Name | `DTE_BIRTH` | `ADR_STREET_1` | `ADR_CITY` | `ADR_ZIP` | `USERNAME` | `EMAIL_ADDRESS` |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | LINDA MILLER | 1970-08-13 | 4161 WBHRXS DR | MOORE | 65863 | `lindamil65` | `linda.miller6@yahoo.com` |\n| **YA7FC2H** | B122535054 | ELIZABETH JACKSON | 1972-09-20 | 4161 WBHRXS DR | MOORE | 78075 | `elizabethjac80` | `elizabeth.jackson8@outlook.com` |\n| **9QBCDRC** | B765898859 | WILLIAM SMITH | 1975-04-26 | 4161 WBHRXS DR | OKLAHOMA CITY | 29674 | `williamsmi37` | `william.smith7@gmail.com` |\n| **5GW4DRP** | B234847074 | BARBARA HERNANDEZ | 1979-09-23 | 4161 WBHRXS DR | TULSA | 77758 | `barbaraher76` | `barbara.hernandez1@yahoo.com` |"
+        },
+        "events": [
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Check for address clustering in the application data where more than 2 cases share the same street address.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "user",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "f2205219-5020-4acc-9b2f-8afcc919012e",
+            "timestamp": 1787766091.628754
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": {
+                    "id": "call_1109617",
+                    "args": {
+                      "query_type": "address_clustering"
+                    },
+                    "name": "query_syntheticdatafraud",
+                    "partial_args": null,
+                    "will_continue": null
+                  },
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": "AY89a1_yHeVfWh8nXgVr-TL2gdwIrprnejxGFRDV6IgDsmSPfm0XZhubo6iUpYz9MoJwp3yjQvNiR4In27cyf_AlwPeJc9WcUla2l-p5wHS1faVVELkfxkG70QfHl9ztmM3ovVTJH0umjwfvZPdrBr5gQ8ONqSZ3bStJgf3wlGHaLlLy9MRmZXwu_flvlD1Z51CMoHCbuQDQYu3aIZDT7I67U2VmAPUTYaRkjbjxKIu44JS4svqfKd1n9cP6fwIzfsxm08eecPcBAnle0oeHpOfQUmeHC4sg9V1_ZSY-7IxWEfPt8kY9I7z3AvkrVm3EyvYDf7M1z3WZ3K2mX_htKkpnPkcWu6-Gr5OqCSz3FO03sbTSPfAOvc_ajGvrjk4g0tFNhXvmag2O97B6yEzckt_QiOspNhCQVn77JrJxR05M9D2-vCNjkEMpR-nAVsiQliBUJphNf3XxADPnd8fC53az2Ar7Lof8uNhN_opHd5dc2PlerCmxI202ycpyUle1_m7tDaZY525KmBm268O1FHXTiewOR55Q4dpbvDCP-d-0ZaAeb6Zlp-EUY2UB-Z3nK3eWmyAAXvFyu6cQBhjzJvomYPR1l2ccOT3GRhi5MMP58guGbOZdE-JqYSnp4uqc_5mstZ8JrnEX7iATnfG_SV2nkETO-xWkMTDA2eEy5FZoT9uhCPIHw2Bsj79Ojxx2V3gWhbGfKsb5LkeG-2DeIoBwM0Ji_5nCyPWsQLNN7vCHLb6BKPjTCgqX31CYv4bRAnkAqVJAsIsZ7Twm_uM0",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "62ae8cb0-a276-4325-bab1-531e4b036ec9"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 22,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 22
+                }
+              ],
+              "prompt_token_count": 643,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 643
+                }
+              ],
+              "thoughts_token_count": 132,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 797,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "primary_fraud_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "62ae8cb0-a276-4325-bab1-531e4b036ec9"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": [],
+            "branch": null,
+            "id": "aec24d58-4acf-4d74-895a-b75476afdb8f",
+            "timestamp": 1787766091.631121
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": {
+                    "will_continue": null,
+                    "scheduling": null,
+                    "parts": null,
+                    "id": "call_1109617",
+                    "name": "query_syntheticdatafraud",
+                    "response": {
+                      "result": "[{\"NUM_CASE\": \"OO8W98F\", \"ID_MEDICAID\": \"B499510925\", \"USERNAME\": \"lindamil65\", \"PASSWORD\": \"xcmichdtod\", \"EMAIL_ADDRESS\": \"linda.miller6@yahoo.com\", \"PHONE_NUMBER\": 9025664961, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"LINDA\", \"NAM_LAST\": \"MILLER\", \"DTE_BIRTH\": 19700813, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 65863, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}, {\"NUM_CASE\": \"YA7FC2H\", \"ID_MEDICAID\": \"B122535054\", \"USERNAME\": \"elizabethjac80\", \"PASSWORD\": \"nbpmuiohaf\", \"EMAIL_ADDRESS\": \"elizabeth.jackson8@outlook.com\", \"PHONE_NUMBER\": 1457338934, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"ELIZABETH\", \"NAM_LAST\": \"JACKSON\", \"DTE_BIRTH\": 19720920, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 78075, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}, {\"NUM_CASE\": \"9QBCDRC\", \"ID_MEDICAID\": \"B765898859\", \"USERNAME\": \"williamsmi37\", \"PASSWORD\": \"hykphffzho\", \"EMAIL_ADDRESS\": \"william.smith7@gmail.com\", \"PHONE_NUMBER\": 346447042, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"WILLIAM\", \"NAM_LAST\": \"SMITH\", \"DTE_BIRTH\": 19750426, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"OKLAHOMA CITY\", \"ADR_ZIP\": 29674, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}, {\"NUM_CASE\": \"5GW4DRP\", \"ID_MEDICAID\": \"B234847074\", \"USERNAME\": \"barbaraher76\", \"PASSWORD\": \"wgmjumtryn\", \"EMAIL_ADDRESS\": \"barbara.hernandez1@yahoo.com\", \"PHONE_NUMBER\": 8970321863, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"BARBARA\", \"NAM_LAST\": \"HERNANDEZ\", \"DTE_BIRTH\": 19790923, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"TULSA\", \"ADR_ZIP\": 77758, \"CDE_CAT_REL\": \"CNF\", \"string_field_16\": null}]"
+                    }
+                  },
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "primary_fraud_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "a73ebd83-98d8-4ec7-a463-b56128611a78",
+            "timestamp": 1787766100.404758
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": {
+                    "id": "call_416788",
+                    "args": {
+                      "sql_query": "SELECT ADR_STREET_1, COUNT(DISTINCT NUM_CASE) AS case_count, COUNT(*) as record_count FROM `ai-hub-459714.frauddector.syntheticdatafraud` GROUP BY ADR_STREET_1 HAVING COUNT(DISTINCT NUM_CASE) > 2"
+                    },
+                    "name": "execute_bigquery_sql",
+                    "partial_args": null,
+                    "will_continue": null
+                  },
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": "AY89a18XxZX4KH1dlVgImgHmI1dO7Dx_-gkzAl4MtC2cEhkmez26A6OWaNz5PzHYW1Z93yE-Z0e3viLcbE3fUWslFMy06D8jaC0udqTlE4wgD9Gn1v9QwhN9jRq4wungGTSGcV8G6IiHs1TexGgRa5hmWFfYdwPyLdJ-fxOtAFD7FiotQR_5if6d3icJf6iFMODtQz0LRAyEDvCID7t5W8JQRq5EqOGIOnkLQoroCXgC",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "1475445d-bc0c-4be5-b27e-7e9a10e3ace9"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 88,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 88
+                }
+              ],
+              "prompt_token_count": 1695,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 1695
+                }
+              ],
+              "thoughts_token_count": 24,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1807,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "primary_fraud_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "1475445d-bc0c-4be5-b27e-7e9a10e3ace9"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": [],
+            "branch": null,
+            "id": "d91e1edb-dfaa-4921-a8c4-3d89c0e5021e",
+            "timestamp": 1787766100.41137
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": {
+                    "will_continue": null,
+                    "scheduling": null,
+                    "parts": null,
+                    "id": "call_416788",
+                    "name": "execute_bigquery_sql",
+                    "response": {
+                      "result": "[{\"ADR_STREET_1\": \"4161 WBHRXS DR\", \"case_count\": 4, \"record_count\": 4}]"
+                    }
+                  },
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "primary_fraud_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "a174411d-adbc-4894-b713-a085d249795e",
+            "timestamp": 1787766104.9913101
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "### Medicaid Application Fraud Audit: Address Clustering Detection\n\n**Detection Rule:** More than 2 distinct `NUM_CASE` sharing the same `ADR_STREET_1`.\n\n---\n\n#### Summary of Findings\n- **Flagged Address:** `4161 WBHRXS DR`\n- **Total Distinct Cases:** 4\n- **Suspicious Indicators:**\n  - 4 distinct applicants/cases registered under the exact same street address.\n  - Inconsistent cities and ZIP codes provided for the identical street address (`MOORE`, `OKLAHOMA CITY`, `TULSA`).\n  - Identical logon date (`2026-08-15`) across all applications.\n\n---\n\n#### Flagged Records\n\n| `NUM_CASE` | `ID_MEDICAID` | Name | `DTE_BIRTH` | `ADR_STREET_1` | `ADR_CITY` | `ADR_ZIP` | `USERNAME` | `EMAIL_ADDRESS` |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | LINDA MILLER | 1970-08-13 | 4161 WBHRXS DR | MOORE | 65863 | `lindamil65` | `linda.miller6@yahoo.com` |\n| **YA7FC2H** | B122535054 | ELIZABETH JACKSON | 1972-09-20 | 4161 WBHRXS DR | MOORE | 78075 | `elizabethjac80` | `elizabeth.jackson8@outlook.com` |\n| **9QBCDRC** | B765898859 | WILLIAM SMITH | 1975-04-26 | 4161 WBHRXS DR | OKLAHOMA CITY | 29674 | `williamsmi37` | `william.smith7@gmail.com` |\n| **5GW4DRP** | B234847074 | BARBARA HERNANDEZ | 1979-09-23 | 4161 WBHRXS DR | TULSA | 77758 | `barbaraher76` | `barbara.hernandez1@yahoo.com` |",
+                  "thought": null,
+                  "thought_signature": "AY89a1-9NuRDyhgUcX4u5sNPz0qfrG_5Fr4tM4jpePbtN_lQGd3R8KQuu2JiYenphtcIoUC14ZqVjl959vFGzlOfEu1bFIYXlY9IO9wObG2BhyUQSYq1_H5RGcsmhAtH2EHQWl7NvjRNM74N_3Lo0pak36-7LWixnpF1vtFeB8LfH9KnvaDRxQ9FW88KEU-EucTOxiSsTYhAYC2tNIdKnaVDRvbk5RdTh0OxxEkIXsBbOGh8Jw-YYxV-v_EREe_DLn1Mw0kdgPPQCrd9vmui7qJiJvIbJGLtEkAwq4KccJidBdashUqSQ4UarN8DUbplmcpja-UL1Rw_0P0H-cpgA0NLIFIrfgsuPXw=",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "aaf0b5ad-860f-4bcd-89cf-75f2203cf8c3"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 558,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 558
+                }
+              ],
+              "prompt_token_count": 1847,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 1847
+                }
+              ],
+              "thoughts_token_count": 43,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 2448,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "primary_fraud_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "aaf0b5ad-860f-4bcd-89cf-75f2203cf8c3",
+                "draft_findings": "### Medicaid Application Fraud Audit: Address Clustering Detection\n\n**Detection Rule:** More than 2 distinct `NUM_CASE` sharing the same `ADR_STREET_1`.\n\n---\n\n#### Summary of Findings\n- **Flagged Address:** `4161 WBHRXS DR`\n- **Total Distinct Cases:** 4\n- **Suspicious Indicators:**\n  - 4 distinct applicants/cases registered under the exact same street address.\n  - Inconsistent cities and ZIP codes provided for the identical street address (`MOORE`, `OKLAHOMA CITY`, `TULSA`).\n  - Identical logon date (`2026-08-15`) across all applications.\n\n---\n\n#### Flagged Records\n\n| `NUM_CASE` | `ID_MEDICAID` | Name | `DTE_BIRTH` | `ADR_STREET_1` | `ADR_CITY` | `ADR_ZIP` | `USERNAME` | `EMAIL_ADDRESS` |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | LINDA MILLER | 1970-08-13 | 4161 WBHRXS DR | MOORE | 65863 | `lindamil65` | `linda.miller6@yahoo.com` |\n| **YA7FC2H** | B122535054 | ELIZABETH JACKSON | 1972-09-20 | 4161 WBHRXS DR | MOORE | 78075 | `elizabethjac80` | `elizabeth.jackson8@outlook.com` |\n| **9QBCDRC** | B765898859 | WILLIAM SMITH | 1975-04-26 | 4161 WBHRXS DR | OKLAHOMA CITY | 29674 | `williamsmi37` | `william.smith7@gmail.com` |\n| **5GW4DRP** | B234847074 | BARBARA HERNANDEZ | 1979-09-23 | 4161 WBHRXS DR | TULSA | 77758 | `barbaraher76` | `barbara.hernandez1@yahoo.com` |"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "5be200cc-6274-4436-b33d-408c160b4ec6",
+            "timestamp": 1787766104.99334
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "| NUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Violation Detail & Verification Summary | Risk Severity |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **OO8W98F** | B499510925 | lindamil65 | xcmichdtod | linda.miller6@yahoo.com | 9025664961 | 20260815 | LINDA | MILLER | 19700813 | F | 4161 WBHRXS DR | *null* | MOORE | 65863 | CNF | Address Cluster: 1 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |\n| **YA7FC2H** | B122535054 | elizabethjac80 | nbpmuiohaf | elizabeth.jackson8@outlook.com | 1457338934 | 20260815 | ELIZABETH | JACKSON | 19720920 | F | 4161 WBHRXS DR | *null* | MOORE | 78075 | CNF | Address Cluster: 2 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |\n| **9QBCDRC** | B765898859 | williamsmi37 | hykphffzho | william.smith7@gmail.com | 346447042 | 20260815 | WILLIAM | SMITH | 19750426 | F | 4161 WBHRXS DR | *null* | OKLAHOMA CITY | 29674 | CNF | Address Cluster: 3 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |\n| **5GW4DRP** | B234847074 | barbaraher76 | wgmjumtryn | barbara.hernandez1@yahoo.com | 8970321863 | 20260815 | BARBARA | HERNANDEZ | 19790923 | F | 4161 WBHRXS DR | *null* | TULSA | 77758 | CNF | Address Cluster: 4 of 4 distinct cases registered to identical street address `4161 WBHRXS DR` with conflicting city/ZIP metadata and identical logon date (20260815). | HIGH |",
+                  "thought": null,
+                  "thought_signature": "AY89a1_UvAxrLYDkb-3h4yZXh9SQAw0sYbVTLp44e-el-c9XheXBmj9acs6m5P_vMNOhLONIzmr3zpxC0F0ynV2jEB0z5uYRXu-Yj_TWzJiomb1hzfUYYIXPsHeGPSlmHENjoaM7miqf1SM4Gndh3UgUCPGj-fOS3hx9I2Qo2ktfTqqJoz8Ev4WKEhSKKed7haqWqeH5euIPbtmO_UZ7CInuCkKP-RSY-cxAAshPOb88izAtv9DknNMJncmJ2FxnKvUNXp2PGVpCNdp6wwEQJUc8PbEU7eAJK46nX60WPWeqp6qvt9z3mFAdvOEmivtaeUUQqiQabOvvy0jtPaIaiMyOIXJ-xdXymVefQdY0HMNL8hR-q3d4okVz2WAkeZpQvm1Qs_5bhoXR8YIg7Uvj97qOHWoLZWGtfMM3ExrWtd8Ac7FDF2eYRSeSgwtyvCm3egX-M6J_zqoHk0S7ab-IJExkCg70JYZPmbNRH7_P57CY3mUNGJZQwJBL4Z3gwJEpvigXFnKj4l5wsWBERhC5q71VeEptsGgLVKcGuSISh2LcSpky4eda9RG3HoJ_2gZ-z61tEEG3zj_bCsgA2PP01heDQwaDW_8JnIL06NKd41c5eGgosIWIqFvjrFwzJXU1Yp19INWeQYgtHiULK4boNG3GsiJgdhOgMX24qRd7Wu3kkYG1goGBMZBfwVxUAJQojdyed9s24J3gGzQYzS7ZnccHY02_AdskRvIKFci2vZoABgFwszKZovU0ynWSPJlM2z7oC-Xue3l11NssMuRBgnapnh4KYvZQGPhXhqSQiGa5X95Rlmllr8pAeKLGt-dY-1d8HLlfMGyoF1EgDQDdiqu5i88lCXSZQY0sFVtIBkFgaOZuJQ7l42fdmeJJeAO-eKNcHcFDnkqSMK7xBsgLTWjzXI4TbUtwEH1VTDdkz5I-fW2ezyGnnxdgrctBywycRrNOtbyyi7VyGh5_jnjZcAfOI_5k-v5LNumTOMW2q7xvant8fhruopk9fR6yFwkCgNHFPpk27THHxVSW__HyKJmBFKI2yzQCRqQ1Ju4qK9xUF-424yJCaHDSXqZ6Di_3UIN2jLhj28Ght1GE4HWxeEXojkP_AAOYquDVcxqs38BtrjD1cKU1-pOCiVdX4qv8KhRqbXKxQ7tDRPVLAfbryV8cgBEoaAfRuYjncQwXIqEc8wHHZ8lxaClMbdR_cm-SOHl6wlzExlCATn2DQveAgbdX-s00cSW0d0RiRi2sPmkkSqeDH4nuO_t3sNs883rfPXBpjh_yxIpxzNJopUkw9UzGbO1vGlRLCqGtqMsd0Tbei8lQL4aCrazuAnva4Cq2Wo4XVuTqDeLZokH2HQtrcJ_s-EAKDIQCglMOn31OlWJRCUr8fQxykoHxQ5tgDgbaThegtK7ScLiron3LE7968RUs_r4Pgs8vyncKv7P4ZbN-wTi0ptFITpClkvSFB1M1Zp0OcLpOwWyj6CD1gPY-MANVkeVrpbFaVL4x9KWKhseE9g4EOx1laPjzf37D32lbLB2yJnkaPyQmaodpmwhF9SD7QmZrt7jrn3J5RIbg6mrIotlwL7flyloTi_jSrbIJZGFLTfvNIwoKNXsI7fFjQayAfvzbuf1cQNxYHkpSqBAMd9022q0rDbeMNFbMKrnaILCgqsTucSklDFuGBCcPKODGop3-IPm3GIBItlrSK-293kiPNLKOx_yeM8pANaQY3PYt3dLYA25BlvLR0ALKLCaOM9U6ao2Do3fWhm7CVL84eTXst0vgjRa1lNne_IKEbexhvDAZLcrmK_P41Q7yRQbJhTTBsvCWynoA0M_7YRwQnDyl5dwlLTDeD5a9NjZCdgw8JH1HvsQQrW-aTVliol_QpyYLEYU9JUdQuq1oGOYrgmcSp2L9C6N4z24tIMxFc74JfDy5U4RdLAFCK096-4GDpAMl6GlrQo0RJkvs6n4YG_JPsonx3-s2OAISc-BN7DMJhAGc4AHHdE2w8xsCsBPNH8LsK4aDx_hfptCftmonYk9p9NTUyElepMyt99Pzhy5plQXVQoD__tCdkvDG73ciBuIeg_tgaer5UdXlytabMuvFKgloKCOd9hFmsoqZzwS4lqYI5sdqIWAl5tpELKmspmybuy74cDxUDtxVH0UB81A4zWcK5v_oCEKUM-yzbbLjFh2GIFlsT69MEl4ywn0e7nRoC_vur4km1WV2Q1Ude-94Nwkycz6shFGBpI10ZaYtG-qaXY5-5E1CDg4Gc5a38AEmdSSB3MKnEpVfDISHeN54BXqnisLa8__3cyxuznoLU0K0hfRVEfGnMQBIPr8cmcjbERlou0FP6Gc7cuGwHk57vj0-9rtgnvH1s8-ONx_qvkj53ZsWYGAcDU619NwUY8TRCN15iPY3t24C_2Z3XTvFXnNq5WDWaffSRO5xskEYUkrPM88r8zSgZ7XcTk8PZLmX6QKy5q37X81-DcHNe9yoYWM5ck9j1RwkmKF2LoUhohmyp1WOXUDoQ8wT3CfrRzaGxopMCta5F-UY7YeQqNGmoawNPBfMFqMi-3V2oHLReNp546G_83y3UWO1yS2hOdxGZNpilAzV58tH7e4x5O5zgFBUPzvZ09ecWqK11gs2yKVB-bdIFHdS8rhvZ2E7omfYLsYuyXat1yD2ETLzUMMcZmOqSn1GvegOctwP0Akf9wCW8XcJ2E0t7aigcDoxPEK02DjgqwDJbQwzURe7dZQWn_1IeH1csAuSJG8EXDzPYEDAgkT04HOBdDrDKcf9q2dLUluwLvjSL2tEDUN3_TFjCWJ3D9eBriQ1rCcT8BAozqzVrTha9aLKcfn_0LdzmxKbOkDN1REceT1FFxF1pDIyYyzMlJZ5I-XWbkHfzAgeeZ7r8AFtWGIZxxB9-mbQfxAjlSrBkgw5MBCSdZlQbB4rKVnJnEGsAjOdVYxiBp4aHa-TT7l8c-xRhUnfFlTxeRi2mgoh-nDjdj2_9iLs561rnNK1JmtMGPhuO9qa3qP5at97L4OrmwP5L_WQg_ZjRsf2_ti0aX2HgZmEk4y87yxFgdsugwzYZJIN9b0C8p_LkHsBEsbRb5bNJ6DaxD9h_7ubKdb3R5muEdNF__JmRPCQ1vcSvcR2LAweTrPMJlLzywL_HpRjjUzA-b-prxOOOqYX7Wyue-FoEkGUnZh2-ijVlBVDKlvJherrxIJO9rnkG2JxmQkkFE29-e4JVMWhW-LuHj_E0DHz0luzaFI6KuDxhxR1T82uubL0S9TOP0n7--ZmnXqkhp9HH1AR3vNyhD89fDmko9YGwkFaCJddkIu0lxJHZAgEvXxcCyXbn_5u9CYA9Pc5V7eeiR7dbpQwr1E3LJloFuDIGJryjMpD4TQ29X-DnYwKYtb5p28d3dB308gXCE-GaVt_HzNuvEzJwNslsA89f3kUiiAh0nhNkYwdgFxAU9ccQcxNjSfiKqUFhU-Z6FySUGkU9qnsELKXK30a-JOY20fjYlJ5HDAgQL1LfCsP9lcZJ9gy0AXW5oqpDNhDKeM8pASqd0i-VO4OZ6UO68E7_FISElN5q09CcNPw0BSIx92r8A4qHED066p9fSPTP6NMyX_CSO301YpV-dvtHBP1uMfWElEV4w1kN7ROiSbVE8OHguJVPcCuxRIOtJBpcy3g74lvcS11M4ojNFmfP5qkCvEYAsp_ZzS43x6QcDHzADMqqcQXqkz4kpHRuQ==",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "e2f62f57-1c69-4e0c-b86f-6fa14f9d8f1f"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 776,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 776
+                }
+              ],
+              "prompt_token_count": 2607,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 2607
+                }
+              ],
+              "thoughts_token_count": 1110,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 4493,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-1ebfb54b-bb7c-4af9-8f45-f1bf4f492a77",
+            "author": "fraud_verification_judge",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "e2f62f57-1c69-4e0c-b86f-6fa14f9d8f1f"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "962920a2-eae2-4c38-ad97-5783ffd222a6",
+            "timestamp": 1787766110.994059
+          }
+        ],
+        "last_update_time": 1787766110.994059
+      },
+      "user_id": "eval_user"
+    }
+  ],
+  "creation_timestamp": 1787766149.866784
+}
