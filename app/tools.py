@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import json
 import logging
 from typing import Any
@@ -40,10 +41,28 @@ def get_bq_client() -> bigquery.Client:
     return _bq_client
 
 
+def _mask_password(password: Any) -> str | None:
+    """Masks raw plaintext passwords into a deterministic partial hash.
+
+    Preserves clustering/collision visibility for auditors (identical passwords produce
+    identical masked hashes) while preventing plaintext credential exposure in outputs.
+    Format: '***[<first 8 hex chars of sha256>]' (e.g. '***[9f86d081]').
+    """
+    if password is None:
+        return None
+    raw = str(password).strip()
+    if not raw:
+        return raw
+    digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:8]
+    return f"***[{digest}]"
+
+
 def _sanitize_rows(
     query_job: bigquery.QueryJob, max_rows: int = MAX_ROW_LIMIT
 ) -> list[dict[str, Any]]:
     """Converts BigQuery RowIterator to a JSON-serializable list of dicts with memory and row caps.
+
+    Also masks plaintext passwords into deterministic partial hashes for auditor safety.
 
     Args:
         query_job: Executed BigQuery QueryJob.
@@ -57,6 +76,8 @@ def _sanitize_rows(
         if count >= max_rows:
             break
         row_dict = dict(row)
+        if "PASSWORD" in row_dict and row_dict["PASSWORD"] is not None:
+            row_dict["PASSWORD"] = _mask_password(row_dict["PASSWORD"])
         for k, v in row_dict.items():
             if v is not None and not isinstance(v, (str, int, float, bool)):
                 row_dict[k] = str(v)
