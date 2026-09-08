@@ -14,7 +14,6 @@
 
 import json
 import logging
-import re
 from typing import Any
 
 from google.cloud import bigquery
@@ -254,59 +253,3 @@ def filter_applications(
     except Exception as e:
         logger.error("Error executing application filter: %s", type(e).__name__)
         return json.dumps({"error": "An error occurred while querying applications."})
-
-
-# Multi-statement / comment / DDL / DML keywords & injection patterns
-FORBIDDEN_SQL_PATTERNS = [
-    re.compile(
-        r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|MERGE|TRUNCATE|GRANT|REVOKE|EXECUTE|EXEC|CALL|EXPORT|LOAD|ASSERT)\b",
-        re.IGNORECASE,
-    ),
-    re.compile(r";"),  # Multi-statement / stacked query injection
-    re.compile(r"--"),  # SQL comment injection
-    re.compile(r"/\*.*?\*/", re.DOTALL),  # Block comments
-    re.compile(
-        r"\bINFORMATION_SCHEMA\b", re.IGNORECASE
-    ),  # Schema enumeration protection
-]
-
-
-def execute_read_only_bigquery_sql(sql_query: str) -> str:
-    """Executes a strictly read-only SELECT query in BigQuery for custom analytics and fraud investigations.
-
-    Args:
-        sql_query: A valid BigQuery Standard SQL SELECT statement.
-
-    Returns:
-        JSON string containing the query results or error message.
-    """
-    stripped_query = sql_query.strip()
-
-    # 1. Enforce SELECT or WITH as the sole starting token
-    if not (
-        stripped_query.lower().startswith("select")
-        or stripped_query.lower().startswith("with")
-    ):
-        return json.dumps(
-            {
-                "error": "Security check failed: Only read-only SELECT or WITH statements are permitted."
-            }
-        )
-
-    # 2. Block stacked queries, DDL/DML, comments, and schema extraction
-    for pattern in FORBIDDEN_SQL_PATTERNS:
-        if pattern.search(stripped_query):
-            return json.dumps(
-                {
-                    "error": "Security check failed: Disallowed SQL construct or comment syntax detected."
-                }
-            )
-
-    client = get_bq_client()
-    try:
-        # Dry-run validation check or direct execution with job config
-        query_job = client.query(stripped_query)
-        return json.dumps(_sanitize_rows(query_job))
-    except Exception as e:
-        logger.error("Error executing custom query: %s", type(e).__name__)
-        return json.dumps({"error": "An error occurred while executing the SQL query."})
