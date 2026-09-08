@@ -1,0 +1,776 @@
+{
+  "eval_set_result_id": "app_medicaid_fraud_eval_1787766153.316436",
+  "eval_set_result_name": "app_medicaid_fraud_eval_1787766153.316436",
+  "eval_set_id": "medicaid_fraud_eval",
+  "eval_case_results": [
+    {
+      "eval_set_file": "medicaid_fraud_eval",
+      "eval_set_id": "medicaid_fraud_eval",
+      "eval_id": "auditor_greeting",
+      "final_eval_status": 1,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "rubric_based_final_response_quality_v1",
+          "threshold": 0.8,
+          "criterion": {
+            "threshold": 0.8,
+            "judgeModelOptions": {
+              "judgeModel": "gemini-3-flash-preview",
+              "numSamples": 1
+            },
+            "rubrics": [
+              {
+                "rubricId": "relevance",
+                "rubricContent": {
+                  "textProperty": "The response directly addresses the user's query."
+                }
+              },
+              {
+                "rubricId": "helpfulness",
+                "rubricContent": {
+                  "textProperty": "The response is helpful and provides useful information."
+                }
+              }
+            ]
+          },
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": [
+              {
+                "rubric_id": "relevance",
+                "rationale": "This is an aggregated score derived from individual entries. Please refer to individual entries in each invocation for actual rationale from the model.",
+                "score": 1.0
+              },
+              {
+                "rubric_id": "helpfulness",
+                "rationale": "This is an aggregated score derived from individual entries. Please refer to individual entries in each invocation for actual rationale from the model.",
+                "score": 1.0
+              }
+            ]
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-26f7dbfa-17fa-4325-8cd8-2b976612e68a",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hello, what is your role and what data do you analyze?",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hello! I am the **Senior Medicaid Fraud Verification Auditor & Compliance Judge** (`fraud_verification_judge`).\n\n---\n\n### **My Mission & Role**\nMy role is to serve as the secondary, authoritative review layer above the Primary Auditor (`primary_fraud_auditor`). I independently verify, cross-check, and audit candidate fraud findings from Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to guarantee:\n- **100% Precision:** Ensuring flagged records strictly meet violation definitions without false positives.\n- **Completeness:** Verifying no edge cases or associated records within a fraud cluster were missed.\n- **Standardized Risk Classification:** Assigning calibrated severity tiers to each violation.\n\n---\n\n### **Data & Violation Rules I Evaluate**\nI audit application and applicant attributes (`NUM_CASE`, `ID_MEDICAID`, `NAM_FIRST`, `NAM_LAST`, `USERNAME`, `PASSWORD`, `EMAIL_ADDRESS`, `PHONE_NUMBER`, `ADR_STREET_1`, `ADR_ZIP`, `CDE_CAT_REL`, `DTE_BIRTH`, etc.) across five core criteria:\n\n1. **Credential Recycling:** Shared usernames or passwords across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases tied to identical physical addresses (`ADR_STREET_1 > 2` cases).\n3. **Identity Mismatches:** Discrepancies where applicant identity names deviate suspiciously from contact or account credentials (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Incremental, rapid numeric progressions in addresses, usernames, emails, or credentials.\n5. **Pregnant Member Anomalies:** Overlapping records sharing identical first names and birth years under category code `CDE_CAT_REL = 'CNF'`.\n\n---\n\n### **Severity Framework**\nEvery confirmed violation is graded using the following compliance standards:\n- **`CRITICAL`:** Cross-case credential recycling or massive address clusters (>5 distinct cases).\n- **`HIGH`:** Standard address clustering (3–5 distinct cases) or pregnant member anomalies.\n- **`MEDIUM`:** Identity mismatches or sequential clustering patterns.\n\n---\n\nWhenever the Primary Auditor presents candidate findings or queries, I will review the records and provide a verified compliance report.",
+                  "thought": null,
+                  "thought_signature": "AY89a19I9Gw9I7ZC6rm4ENu_wddigNYB_7KStwE_TQ19DuWoROyHKI8kXqHyMWJLNhxKY0MKBUnUWzBko4hvc6kSLvmK5b6UGz5hfWtGKjqzIpKcBLvYBo5MAuuRmhNxt55X7JODerxpgwTXtsj9V-_z0Tb03SbQtzONcjf1nsnXNLBU9WemB5VmYdqqU9NTwyPtPVKMGfNtlISyjGiuso2wZcMdMX67jr3Pc_s83G6YniMSAk8jai5BqCjqFQhBzlvPT9Hm9aW5864kLRF8FImWhrT0bdGmoiJ8WvYNIRT_7z2ZwY-LiYf3189QXsxZYCbmlp1tCZszKHeb-f_7MLEwcsGYeOzRgec-KKy1kRFd-L9sWBHmisPPvgw9HsBzMYAfJQo3ZRe5d1MCrXAqTSyQogxXDDvAvkfIqtyb7iMg4-X9hE8-603LxsE5bqBuQRY_UiH9MDh67GzVmavlKS26Wkxqx_fpdWPx-OJFgJt0gJWNugjFvgxPkBMyHhNq00qolK6qvYEa42fFgKrwb6dCayVhEzrwl4DHuUYukZP3VLJAzjtwyctrgw1LoW9EGPqC4kfpfdPCj0Y4kE4JXaJ87_jcsi9wPHho0A5m-tamcuxFdlAYphtBTqBt6CzGd_dUX60_Y9JB8o-ZDtNVvnw6bDufVTxA9cgeM_OFApKRCtCQmMuwXxvXsSMOs7WDqyG9eMmbyZgVutsUB-R4ix7eYU3f-Zb-7qDoNXnd-nORLQ-EDDSi9JGvDx5lr7wwHNP7qjyo-ZJs1n8rRpMJ0j8nxz1HC-i4ftwYWlwT39p6KtWmPs-CJQbtM-9AmJqrS1SGnbjOH0eWBFbKFkqjc_p68x0GbQN1XLNuveKDorGo88ISrliZ6nK3c3umGlXID4w7ngt9EaSjIhvfb_Vls9tBzJF3Ci9pGxIXfOCnxiIVJ9xUAG7kT-YGI48c8Ifsn2eg4AsEg87w0j7XdPHpIgval-5LeZyryIv6YVoqZbSkYSFg5V3jtrgLc1U5JeAo-BlPeGL67_FthY3CWNMys8iOsRtDJcNNq155DQcXqoxxXaT-qsZLEWFtQSOlhTq4SBV9QHmoE9qqpWA9PZYpMhJblg==",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "primary_fraud_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "Hello! I am the **Primary Medicaid Application Auditor** (`primary_fraud_auditor`).\n\n### **My Mission**\nI audit Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to identify suspicious patterns, anomalies, and potential fraud.\n\n---\n\n### **Data & Patterns I Analyze**\nI review applicant and application attributes (names, case numbers, addresses, emails, usernames, passwords, relationship/category codes, birthdates) against core detection rules:\n\n1. **Credential Recycling:** Shared passwords or usernames across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases registered under the same street address (`ADR_STREET_1 > 2` distinct cases).\n3. **Identity Mismatches:** Inconsistencies where applicant names (`NAM_FIRST`, `NAM_LAST`) deviate from associated contact/account details (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Rapid, incremental numeric patterns in street addresses, usernames, passwords, or emails.\n5. **Pregnant Member Anomalies:** Records sharing the same first name and birth year under relationship category `CDE_CAT_REL = 'CNF'`.\n\n---\n\nLet me know if you would like me to run an audit query or look into specific fraud detection criteria!",
+                        "thought": null,
+                        "thought_signature": "AY89a18cB3TPBkEDvFBNHQQZFEwCQHyuWOia1glLfhqcft-KZdTOMaZVX_8jrbnRBP3ibVl0sQCNb7Tk5StqS9cUHd-l1HnchrQdHIMWA8IME7BnpIN-M-JLz7xuBtb84qFSy1jILz07sOC3c3pO6Vr56_edxFcr65RuXPEYThQw6YrMxymd4vke0AC7dUvpcuMb7ZTCHAuPXN3zrd0ilcTlrChPabjFnTxHHwVaeDJePY58Nf5qdDSiucKQUmDd9sO9TvQPYRCQZIFZj9d2M4EEr3mIjMbBbAK9C7AC1arkQaCP5Phu1FOq8HhzZqayCUtdiA7zlaryho8nqDEr2iaHnxiZb6CGcObPBcRcbZdjHYAZEHzp7WRvobJb9oQS2Q7VL6yw3hiTnyJge718MMrEzZBSjX93ftmAPhX9DkvvTp20DkzjBkvckheeeG5n3Gl5bqgSGiSFh8AUzne3_tv__axIPKOVzsThDtw0OZpTO2ySncvKmVZmd1QhYgOb6kjh8ObNfSMgxJNYCA9LBfgCdyUYS7Qz3ycbI2JeifsOXWu0uFxDknl4Pl-NkRT-GsG6a842ZxbmV0GeYu7hyfin-nop0iSnDiWiicrnQuvNnLsREIty1kR0Tl_1HnYcdu4uOUAdYGq1_BfOHjfox215ThQZSvmHUilKVdVqPvr2HoVv6tHsrHQ5IR7D6yaxfbm2UZW5x3PJZqBFOBw_UhZyOLAorLpsnzL9AZvdttx4jtWH5GXUKDcSpNtLoi7r8fSjdqZ5MGJ7w9zv3wDkq3yRj9ZLYuD5Vj3cZd8TjD8zdH6eWHP8Z-oQlQdpuucKijJW95lTCZb3uAe9FEFl2iBhEZ4qHF_a3-ILaDtCdnuH7PTZcK-wJdAKxokeT6rDe6lUQVal0yHGkAXvoPmW3MPhk4X7hBurDl_J4EdQ6IDGKQlbfEGlYVv1z2G6HAOCCloUSC-UlVg3L4Vf67JMwexLYw-ewxLqYtSCyUchl4wuNkL_NV007Fxyc7ithUHoCo9MTy8NmuCDr95tGh8DL-8kwY7h3Vcec9sCTpCYEiZKkeK3rPgmcOS-ZWJQJzlkZY02x4CHWhpj_N7jE4oV-BaziUcH1leMXP6eW2Cqh-eG8WxcUDnp",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                }
+              ]
+            },
+            "creation_timestamp": 1787766098.121772,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "primary_fraud_auditor": {
+                  "name": "primary_fraud_auditor",
+                  "instructions": "\n# Role\nYou are the Primary Medicaid Application Auditor. Your mission is to query BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and detect suspicious or anomalous Medicaid application records.\n\n# Core Detection Rules\n1. Credential Recycling: Identical PASSWORD or USERNAME across multiple distinct NUM_CASE.\n2. Address Clustering: More than 2 distinct NUM_CASE with the same ADR_STREET_1.\n3. Identity Mismatch: NAM_FIRST and NAM_LAST do not match or align with USERNAME, EMAIL_ADDRESS, or password.\n4. Sequential Clusters: ADR_STREET_1, EMAIL_ADDRESS, USERNAME, or PASSWORD following rapid incremental numeric sequences.\n5. Pregnant members: Same NAM_FIRST and same birth year (first 4 characters of DTE_BIRTH) with CDE_CAT_REL = 'CNF'.\n\n# Execution Guidelines\n- Query the BigQuery dataset using available tools (`query_syntheticdatafraud` or `execute_bigquery_sql`).\n- Compile all flagged rows into a initial structured Markdown draft.\n- Keep output concise (10-15 rows per response batch if large).\n\n\nYou are an agent. Your internal name is \"primary_fraud_auditor\".",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "google_maps": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Queries the Medicaid application dataset `ai-hub-459714.frauddector.syntheticdatafraud` in BigQuery.\n\n    Args:\n        query_type: Type of query analysis to run. Supported types:\n            - 'all': Fetch raw rows from syntheticdatafraud.\n            - 'credential_recycling': Find duplicate USERNAME or PASSWORD across distinct NUM_CASE.\n            - 'address_clustering': Find ADR_STREET_1 values with more than 2 distinct NUM_CASE.\n            - 'pregnant_members': Find members with CDE_CAT_REL = 'CNF' sharing NAM_FIRST and birth year (first 4 chars of DTE_BIRTH).\n            - 'custom': Custom filter supplied via custom_where_clause.\n        limit: Maximum number of rows to return (default: 50).\n        offset: Row offset for pagination (default: 0).\n        custom_where_clause: Optional SQL WHERE clause when query_type is 'custom'.\n\n    Returns:\n        JSON string containing the queried records or analytical matches.\n    ",
+                          "name": "query_syntheticdatafraud",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "query_type": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": "all",
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              },
+                              "limit": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 50,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "offset": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 0,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "custom_where_clause": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": true,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": null,
+                            "property_ordering": null,
+                            "required": null,
+                            "title": null,
+                            "type": "STRING"
+                          },
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Executes an arbitrary BigQuery SQL query against the dataset.\n\n    Args:\n        sql_query: Valid BigQuery Standard SQL string.\n\n    Returns:\n        JSON string containing the query results.\n    ",
+                          "name": "execute_bigquery_sql",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "sql_query": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "sql_query"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": null,
+                            "property_ordering": null,
+                            "required": null,
+                            "title": null,
+                            "type": "STRING"
+                          },
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_search_retrieval": null,
+                      "parallel_ai_search": null,
+                      "url_context": null,
+                      "mcp_servers": null,
+                      "exa_ai_search": null
+                    }
+                  ]
+                },
+                "fraud_verification_judge": {
+                  "name": "fraud_verification_judge",
+                  "instructions": "\n# Role\nYou are the Senior Medicaid Fraud Verification Auditor & Compliance Judge. Your job is to double-check and audit the draft findings provided by the Primary Auditor (Hello! I am the **Primary Medicaid Application Auditor** (`primary_fraud_auditor`).\n\n### **My Mission**\nI audit Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to identify suspicious patterns, anomalies, and potential fraud.\n\n---\n\n### **Data & Patterns I Analyze**\nI review applicant and application attributes (names, case numbers, addresses, emails, usernames, passwords, relationship/category codes, birthdates) against core detection rules:\n\n1. **Credential Recycling:** Shared passwords or usernames across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases registered under the same street address (`ADR_STREET_1 > 2` distinct cases).\n3. **Identity Mismatches:** Inconsistencies where applicant names (`NAM_FIRST`, `NAM_LAST`) deviate from associated contact/account details (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Rapid, incremental numeric patterns in street addresses, usernames, passwords, or emails.\n5. **Pregnant Member Anomalies:** Records sharing the same first name and birth year under relationship category `CDE_CAT_REL = 'CNF'`.\n\n---\n\nLet me know if you would like me to run an audit query or look into specific fraud detection criteria!) to ensure 100% precision, zero missed records, and clear risk classification.\n\n# Audit & Double-Check Criteria\n1. Accuracy Audit: Verify that every flagged record genuinely violates one of the 5 core fraud rules (Credential Recycling, Address Clustering, Identity Mismatch, Sequential Clusters, Pregnant Members).\n2. Completeness Check: Ensure no matching candidate records or edge cases were skipped.\n3. Severity Classification: Assign a Severity Rating to each flagged record:\n   - CRITICAL: Cross-case Credential Recycling or multi-case Address Clusters (>5 cases).\n   - HIGH: Address Clusters (3-5 cases) or Pregnant Member anomalies.\n   - MEDIUM: Identity Mismatch or Sequential Cluster anomalies.\n\n# Output Expectations\nFormat your final output as a professional Markdown table:\nNUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Violation Detail & Verification Summary | Risk Severity\n\nIf no records are found for a query, output: 'No violations detected for this criterion'.\nIf responses are batched, end with: 'Would you like me to display the next batch of findings?'\n\n\nYou are an agent. Your internal name is \"fraud_verification_judge\".",
+                  "tool_declarations": []
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hello, what is your role and what data do you analyze?",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": null,
+            "intermediate_data": null,
+            "creation_timestamp": 0.0,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "rubric_based_final_response_quality_v1",
+              "threshold": 0.8,
+              "criterion": {
+                "threshold": 0.8,
+                "judgeModelOptions": {
+                  "judgeModel": "gemini-3-flash-preview",
+                  "numSamples": 1
+                },
+                "rubrics": [
+                  {
+                    "rubricId": "relevance",
+                    "rubricContent": {
+                      "textProperty": "The response directly addresses the user's query."
+                    }
+                  },
+                  {
+                    "rubricId": "helpfulness",
+                    "rubricContent": {
+                      "textProperty": "The response is helpful and provides useful information."
+                    }
+                  }
+                ]
+              },
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": [
+                  {
+                    "rubric_id": "relevance",
+                    "rationale": "The final answer directly addresses the questions asked in the prompt.",
+                    "score": 1.0
+                  },
+                  {
+                    "rubric_id": "helpfulness",
+                    "rationale": "The response provides comprehensive information related to the persona's role and data analysis tasks, which is useful for understanding its capabilities within the specified context.",
+                    "score": 1.0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___34a212be-9279-46ca-bb77-ba69740356bc",
+      "session_details": {
+        "id": "___eval___session___34a212be-9279-46ca-bb77-ba69740356bc",
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {
+          "__llm_request_key__": "4d7c2a2e-de05-4836-9dc0-586b3cc6fd4e",
+          "draft_findings": "Hello! I am the **Primary Medicaid Application Auditor** (`primary_fraud_auditor`).\n\n### **My Mission**\nI audit Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to identify suspicious patterns, anomalies, and potential fraud.\n\n---\n\n### **Data & Patterns I Analyze**\nI review applicant and application attributes (names, case numbers, addresses, emails, usernames, passwords, relationship/category codes, birthdates) against core detection rules:\n\n1. **Credential Recycling:** Shared passwords or usernames across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases registered under the same street address (`ADR_STREET_1 > 2` distinct cases).\n3. **Identity Mismatches:** Inconsistencies where applicant names (`NAM_FIRST`, `NAM_LAST`) deviate from associated contact/account details (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Rapid, incremental numeric patterns in street addresses, usernames, passwords, or emails.\n5. **Pregnant Member Anomalies:** Records sharing the same first name and birth year under relationship category `CDE_CAT_REL = 'CNF'`.\n\n---\n\nLet me know if you would like me to run an audit query or look into specific fraud detection criteria!"
+        },
+        "events": [
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hello, what is your role and what data do you analyze?",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-26f7dbfa-17fa-4325-8cd8-2b976612e68a",
+            "author": "user",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "2070caac-9b3a-40b6-a2cf-ea254ec53bdc",
+            "timestamp": 1787766091.259378
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hello! I am the **Primary Medicaid Application Auditor** (`primary_fraud_auditor`).\n\n### **My Mission**\nI audit Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to identify suspicious patterns, anomalies, and potential fraud.\n\n---\n\n### **Data & Patterns I Analyze**\nI review applicant and application attributes (names, case numbers, addresses, emails, usernames, passwords, relationship/category codes, birthdates) against core detection rules:\n\n1. **Credential Recycling:** Shared passwords or usernames across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases registered under the same street address (`ADR_STREET_1 > 2` distinct cases).\n3. **Identity Mismatches:** Inconsistencies where applicant names (`NAM_FIRST`, `NAM_LAST`) deviate from associated contact/account details (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Rapid, incremental numeric patterns in street addresses, usernames, passwords, or emails.\n5. **Pregnant Member Anomalies:** Records sharing the same first name and birth year under relationship category `CDE_CAT_REL = 'CNF'`.\n\n---\n\nLet me know if you would like me to run an audit query or look into specific fraud detection criteria!",
+                  "thought": null,
+                  "thought_signature": "AY89a18cB3TPBkEDvFBNHQQZFEwCQHyuWOia1glLfhqcft-KZdTOMaZVX_8jrbnRBP3ibVl0sQCNb7Tk5StqS9cUHd-l1HnchrQdHIMWA8IME7BnpIN-M-JLz7xuBtb84qFSy1jILz07sOC3c3pO6Vr56_edxFcr65RuXPEYThQw6YrMxymd4vke0AC7dUvpcuMb7ZTCHAuPXN3zrd0ilcTlrChPabjFnTxHHwVaeDJePY58Nf5qdDSiucKQUmDd9sO9TvQPYRCQZIFZj9d2M4EEr3mIjMbBbAK9C7AC1arkQaCP5Phu1FOq8HhzZqayCUtdiA7zlaryho8nqDEr2iaHnxiZb6CGcObPBcRcbZdjHYAZEHzp7WRvobJb9oQS2Q7VL6yw3hiTnyJge718MMrEzZBSjX93ftmAPhX9DkvvTp20DkzjBkvckheeeG5n3Gl5bqgSGiSFh8AUzne3_tv__axIPKOVzsThDtw0OZpTO2ySncvKmVZmd1QhYgOb6kjh8ObNfSMgxJNYCA9LBfgCdyUYS7Qz3ycbI2JeifsOXWu0uFxDknl4Pl-NkRT-GsG6a842ZxbmV0GeYu7hyfin-nop0iSnDiWiicrnQuvNnLsREIty1kR0Tl_1HnYcdu4uOUAdYGq1_BfOHjfox215ThQZSvmHUilKVdVqPvr2HoVv6tHsrHQ5IR7D6yaxfbm2UZW5x3PJZqBFOBw_UhZyOLAorLpsnzL9AZvdttx4jtWH5GXUKDcSpNtLoi7r8fSjdqZ5MGJ7w9zv3wDkq3yRj9ZLYuD5Vj3cZd8TjD8zdH6eWHP8Z-oQlQdpuucKijJW95lTCZb3uAe9FEFl2iBhEZ4qHF_a3-ILaDtCdnuH7PTZcK-wJdAKxokeT6rDe6lUQVal0yHGkAXvoPmW3MPhk4X7hBurDl_J4EdQ6IDGKQlbfEGlYVv1z2G6HAOCCloUSC-UlVg3L4Vf67JMwexLYw-ewxLqYtSCyUchl4wuNkL_NV007Fxyc7ithUHoCo9MTy8NmuCDr95tGh8DL-8kwY7h3Vcec9sCTpCYEiZKkeK3rPgmcOS-ZWJQJzlkZY02x4CHWhpj_N7jE4oV-BaziUcH1leMXP6eW2Cqh-eG8WxcUDnp",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "34aab12b-7d0b-486f-9f73-ebd9299ce9af"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 290,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 290
+                }
+              ],
+              "prompt_token_count": 636,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 636
+                }
+              ],
+              "thoughts_token_count": 194,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1120,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-26f7dbfa-17fa-4325-8cd8-2b976612e68a",
+            "author": "primary_fraud_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "34aab12b-7d0b-486f-9f73-ebd9299ce9af",
+                "draft_findings": "Hello! I am the **Primary Medicaid Application Auditor** (`primary_fraud_auditor`).\n\n### **My Mission**\nI audit Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to identify suspicious patterns, anomalies, and potential fraud.\n\n---\n\n### **Data & Patterns I Analyze**\nI review applicant and application attributes (names, case numbers, addresses, emails, usernames, passwords, relationship/category codes, birthdates) against core detection rules:\n\n1. **Credential Recycling:** Shared passwords or usernames across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases registered under the same street address (`ADR_STREET_1 > 2` distinct cases).\n3. **Identity Mismatches:** Inconsistencies where applicant names (`NAM_FIRST`, `NAM_LAST`) deviate from associated contact/account details (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Rapid, incremental numeric patterns in street addresses, usernames, passwords, or emails.\n5. **Pregnant Member Anomalies:** Records sharing the same first name and birth year under relationship category `CDE_CAT_REL = 'CNF'`.\n\n---\n\nLet me know if you would like me to run an audit query or look into specific fraud detection criteria!"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "a197ec31-3d52-4525-951f-e0621cf51721",
+            "timestamp": 1787766091.4257972
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Hello! I am the **Senior Medicaid Fraud Verification Auditor & Compliance Judge** (`fraud_verification_judge`).\n\n---\n\n### **My Mission & Role**\nMy role is to serve as the secondary, authoritative review layer above the Primary Auditor (`primary_fraud_auditor`). I independently verify, cross-check, and audit candidate fraud findings from Medicaid application records stored in Google BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) to guarantee:\n- **100% Precision:** Ensuring flagged records strictly meet violation definitions without false positives.\n- **Completeness:** Verifying no edge cases or associated records within a fraud cluster were missed.\n- **Standardized Risk Classification:** Assigning calibrated severity tiers to each violation.\n\n---\n\n### **Data & Violation Rules I Evaluate**\nI audit application and applicant attributes (`NUM_CASE`, `ID_MEDICAID`, `NAM_FIRST`, `NAM_LAST`, `USERNAME`, `PASSWORD`, `EMAIL_ADDRESS`, `PHONE_NUMBER`, `ADR_STREET_1`, `ADR_ZIP`, `CDE_CAT_REL`, `DTE_BIRTH`, etc.) across five core criteria:\n\n1. **Credential Recycling:** Shared usernames or passwords across multiple distinct cases (`NUM_CASE`).\n2. **Address Clustering:** High density of distinct cases tied to identical physical addresses (`ADR_STREET_1 > 2` cases).\n3. **Identity Mismatches:** Discrepancies where applicant identity names deviate suspiciously from contact or account credentials (`USERNAME`, `EMAIL_ADDRESS`, `PASSWORD`).\n4. **Sequential Clusters:** Incremental, rapid numeric progressions in addresses, usernames, emails, or credentials.\n5. **Pregnant Member Anomalies:** Overlapping records sharing identical first names and birth years under category code `CDE_CAT_REL = 'CNF'`.\n\n---\n\n### **Severity Framework**\nEvery confirmed violation is graded using the following compliance standards:\n- **`CRITICAL`:** Cross-case credential recycling or massive address clusters (>5 distinct cases).\n- **`HIGH`:** Standard address clustering (3–5 distinct cases) or pregnant member anomalies.\n- **`MEDIUM`:** Identity mismatches or sequential clustering patterns.\n\n---\n\nWhenever the Primary Auditor presents candidate findings or queries, I will review the records and provide a verified compliance report.",
+                  "thought": null,
+                  "thought_signature": "AY89a19I9Gw9I7ZC6rm4ENu_wddigNYB_7KStwE_TQ19DuWoROyHKI8kXqHyMWJLNhxKY0MKBUnUWzBko4hvc6kSLvmK5b6UGz5hfWtGKjqzIpKcBLvYBo5MAuuRmhNxt55X7JODerxpgwTXtsj9V-_z0Tb03SbQtzONcjf1nsnXNLBU9WemB5VmYdqqU9NTwyPtPVKMGfNtlISyjGiuso2wZcMdMX67jr3Pc_s83G6YniMSAk8jai5BqCjqFQhBzlvPT9Hm9aW5864kLRF8FImWhrT0bdGmoiJ8WvYNIRT_7z2ZwY-LiYf3189QXsxZYCbmlp1tCZszKHeb-f_7MLEwcsGYeOzRgec-KKy1kRFd-L9sWBHmisPPvgw9HsBzMYAfJQo3ZRe5d1MCrXAqTSyQogxXDDvAvkfIqtyb7iMg4-X9hE8-603LxsE5bqBuQRY_UiH9MDh67GzVmavlKS26Wkxqx_fpdWPx-OJFgJt0gJWNugjFvgxPkBMyHhNq00qolK6qvYEa42fFgKrwb6dCayVhEzrwl4DHuUYukZP3VLJAzjtwyctrgw1LoW9EGPqC4kfpfdPCj0Y4kE4JXaJ87_jcsi9wPHho0A5m-tamcuxFdlAYphtBTqBt6CzGd_dUX60_Y9JB8o-ZDtNVvnw6bDufVTxA9cgeM_OFApKRCtCQmMuwXxvXsSMOs7WDqyG9eMmbyZgVutsUB-R4ix7eYU3f-Zb-7qDoNXnd-nORLQ-EDDSi9JGvDx5lr7wwHNP7qjyo-ZJs1n8rRpMJ0j8nxz1HC-i4ftwYWlwT39p6KtWmPs-CJQbtM-9AmJqrS1SGnbjOH0eWBFbKFkqjc_p68x0GbQN1XLNuveKDorGo88ISrliZ6nK3c3umGlXID4w7ngt9EaSjIhvfb_Vls9tBzJF3Ci9pGxIXfOCnxiIVJ9xUAG7kT-YGI48c8Ifsn2eg4AsEg87w0j7XdPHpIgval-5LeZyryIv6YVoqZbSkYSFg5V3jtrgLc1U5JeAo-BlPeGL67_FthY3CWNMys8iOsRtDJcNNq155DQcXqoxxXaT-qsZLEWFtQSOlhTq4SBV9QHmoE9qqpWA9PZYpMhJblg==",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "turn_complete_reason": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "4d7c2a2e-de05-4836-9dc0-586b3cc6fd4e"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 502,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 502
+                }
+              ],
+              "prompt_token_count": 951,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 951
+                }
+              ],
+              "thoughts_token_count": 170,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1623,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-26f7dbfa-17fa-4325-8cd8-2b976612e68a",
+            "author": "fraud_verification_judge",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "4d7c2a2e-de05-4836-9dc0-586b3cc6fd4e"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "3c45ce02-8545-4908-ab68-14463fe472e4",
+            "timestamp": 1787766098.123071
+          }
+        ],
+        "last_update_time": 1787766098.123071
+      },
+      "user_id": "eval_user"
+    }
+  ],
+  "creation_timestamp": 1787766153.316436
+}

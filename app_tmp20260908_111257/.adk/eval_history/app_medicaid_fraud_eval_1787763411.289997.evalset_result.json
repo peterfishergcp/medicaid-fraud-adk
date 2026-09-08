@@ -1,0 +1,1106 @@
+{
+  "eval_set_result_id": "app_medicaid_fraud_eval_1787763411.289997",
+  "eval_set_result_name": "app_medicaid_fraud_eval_1787763411.289997",
+  "eval_set_id": "medicaid_fraud_eval",
+  "eval_case_results": [
+    {
+      "eval_set_file": "medicaid_fraud_eval",
+      "eval_set_id": "medicaid_fraud_eval",
+      "eval_id": "address_clustering_query",
+      "final_eval_status": 1,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "rubric_based_final_response_quality_v1",
+          "threshold": 0.8,
+          "criterion": {
+            "threshold": 0.8,
+            "judgeModelOptions": {
+              "judgeModel": "gemini-3-flash-preview",
+              "numSamples": 1
+            },
+            "rubrics": [
+              {
+                "rubricId": "relevance",
+                "rubricContent": {
+                  "textProperty": "The response directly addresses the user's query."
+                }
+              },
+              {
+                "rubricId": "helpfulness",
+                "rubricContent": {
+                  "textProperty": "The response is helpful and provides useful information."
+                }
+              }
+            ]
+          },
+          "custom_function_path": null,
+          "score": 1.0,
+          "eval_status": 1,
+          "details": {
+            "rubric_scores": [
+              {
+                "rubric_id": "relevance",
+                "rationale": "This is an aggregated score derived from individual entries. Please refer to individual entries in each invocation for actual rationale from the model.",
+                "score": 1.0
+              },
+              {
+                "rubric_id": "helpfulness",
+                "rationale": "This is an aggregated score derived from individual entries. Please refer to individual entries in each invocation for actual rationale from the model.",
+                "score": 1.0
+              }
+            ]
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Check for address clustering in the application data where more than 2 cases share the same street address.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "| NUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Detailed explanation of what exactly matched |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| 5GW4DRP | B234847074 | barbaraher76 | wgmjumtryn | barbara.hernandez1@yahoo.com | 8970321863 | 20260815 | BARBARA | HERNANDEZ | 19790923 | F | 4161 WBHRXS DR | *null* | TULSA | 77758 | CNF | ADR_STREET_1 cluster |\n| 9QBCDRC | B765898859 | williamsmi37 | hykphffzho | william.smith7@gmail.com | 346447042 | 20260815 | WILLIAM | SMITH | 19750426 | F | 4161 WBHRXS DR | *null* | OKLAHOMA CITY | 29674 | CNF | ADR_STREET_1 cluster |\n| OO8W98F | B499510925 | lindamil65 | xcmichdtod | linda.miller6@yahoo.com | 9025664961 | 20260815 | LINDA | MILLER | 19700813 | F | 4161 WBHRXS DR | *null* | MOORE | 65863 | CNF | ADR_STREET_1 cluster |\n| YA7FC2H | B122535054 | elizabethjac80 | nbpmuiohaf | elizabeth.jackson8@outlook.com | 1457338934 | 20260815 | ELIZABETH | JACKSON | 19720920 | F | 4161 WBHRXS DR | *null* | MOORE | 78075 | CNF | ADR_STREET_1 cluster |",
+                  "thought": null,
+                  "thought_signature": "AY89a19foeutzratihXamaUF7ZEAWxg8_6WB6gAuZWlTZEX8vaJa0Nma4oNG1xBzcw138AnNWFEvOIk_AB5A8Y2FdiSaVAGgF31LZWk_UpestpWQwqmZAPN8Y__TfGtQzT-F8TnDcCzSUcis6VdnYwWMl5ecoute2kA183syzHOmhNGAzR9fndF3uTvXjB9IPwbgHw02MO4dyQ7xN_EdkK7wAYnHXczLkP5ZGHExMVTHV6P3ZVkSYxoLDaU6bLJT2jXyQoaC79zRtMFSCMzkA21u-m3CGFrW27mOChcRmwqYg60aHOIT9ExzWPVoN5SaQ3z6PJFOKU86P7kiJPh84fOCHbVANYevL5QVZY9-9aXCYocB8auii8Hd9gHElzXAyHAvdx09QDNOEMwY0A1mXr3rUiFVQe-ZiZmRQIOD6G7w7xklWzZP8zK6Pmv6U6rtxR_q8pmw6k0mpQDJ1POk7-AidoTPDWqO2qHRU6rXfc6t-B4cOdBJjSjQQLxKWvLONK9dIKKNFEwsnQ5wHPbR24DstxRowFh5oPh0-UYFkSwLMg_XlRGhvPbcxoH2MkWJs3Sskhb9gZexTMFeGizHKE3TCGVQ2vGYJ7liHhU_dwfgh4HvOTvOtW3qvhHR3L4K56SV2yYeTgjuPB0qnXVgUrQPy7PzUQ==",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "medicaid_application_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_1105432",
+                          "args": {
+                            "sql_query": "WITH clustered_addresses AS (\n    SELECT ADR_STREET_1\n    FROM `ai-hub-459714.frauddector.syntheticdatafraud`\n    WHERE ADR_STREET_1 IS NOT NULL AND TRIM(ADR_STREET_1) != ''\n    GROUP BY ADR_STREET_1\n    HAVING COUNT(DISTINCT NUM_CASE) > 2\n)\nSELECT \n    t.NUM_CASE,\n    t.ID_MEDICAID,\n    t.USERNAME,\n    t.PASSWORD,\n    t.EMAIL_ADDRESS,\n    t.PHONE_NUMBER,\n    t.DTE_LAST_LOGON,\n    t.NAM_FIRST,\n    t.NAM_LAST,\n    t.DTE_BIRTH,\n    t.CDE_SEX,\n    t.ADR_STREET_1,\n    t.ADR_STREET_2,\n    t.ADR_CITY,\n    t.ADR_ZIP,\n    t.CDE_CAT_REL\nFROM `ai-hub-459714.frauddector.syntheticdatafraud` t\nINNER JOIN clustered_addresses c ON t.ADR_STREET_1 = c.ADR_STREET_1\nORDER BY t.ADR_STREET_1, t.NUM_CASE\nLIMIT 15;"
+                          },
+                          "name": "execute_bigquery_sql",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "AY89a1-k1gQhdoRPI_HrUSebgqCBAD38zP6lz8LRu9IzCadU7p9o63t_xByvsxKSJ524RTIyfI8j_qkBZEivWuwuX6pHSy9BbX9nj8DniruHw5RdBnJOGsDNzLJIVM8JxPdHdRS7Han_Z5LIvDlFL7Nwy8zIfN84_KzdqsvVeZpC8KeGSVOc6KAxEPxlF9wUDa11p282bJ5bzInbFxBI81VS-Tj8oEuGkWwhO07QOuY7ScpJ1n_Kono3YeYc-_fvFYl1kNPnvaxXDpBvUuNJs1-ZjEfTyDBBj6dLi9RjjtiMqeM4OrJtbiZYWyAJfFxq882h-Fsfi3otFeC2gNqu2a4x15tFB2dO5Sm8fF_4pe7G9oEbwDYbjV96e1UJ6bnnh_4C1RLze-rUcxb3kt45pZ3x74IDK89VfYG8j1nET6m4vthV4Qa6Tlvrv29zQhX5-i-3FCh38_8LCtG_n8zTfhyMOWWoE1_n4enQY3du3oEUgXkbzpnAYVXO-WpaEN6u_c0OaBK5oxmjdRw1ZkyyLerkcoFo__LR81lQcAyIlVF-MG2p6UKAVz0QadkyRmoIfSS6ppg8Oq_CreBWQfW2vdzAKLiQqbAaif0aqROuZjsB2m4z9RmWUf5-T0On42vVFjEL7Fa-dnc6XaQ4SF9yd_VeIXUbqLQACtI60oWOEzKygV0e1Y_kXV0mCeFS1CWeoYBFCbWwTOJrbnBOLVPbsEeedqH6XwPy-uQ9OvgsgHva5rEuycXorSYvUWErhNK4_Hm6lQxloQhq7VGch8GDGveSJ24pF-7t6A2BVd8NctG6YnQyvIddNK56Ai78uKG_ThQeXX-PG1Lo_NxogK9z-6KFGOa178I-U-kY1oxhsv5GuHQGKG3kQ3cD0t2A9M96K408rWGErO795u3jUkvv7o35b4YAvzimufyx1D5P2c2S9gtErwy8Ko6J-BOjs9w43NinMfI77bS7_hLgvb1eHB7gmIuA2w_x4QCo4pFuKajHGnR5dEyE8zE2jy0_-eBHIH7jM8B1GBv71VPA-XpgTP0nbw99hZh95ja88tjRPfaCCMuRtfbFDz7kqv-S9hVzMcuNaDBlasFjDj9F9rlqcF9PXdeKXNmSaRaqm9I-STRl5R_DdvdOWOQ3KCJvWyj08j9PXMcc785jYwuwBqWvrarsxXLFoIxWath6tgDaTmfwXDi2-V16pGMFsiirY3-q0m4ybAFss91teDADuYFmump-_l4muC_B1QlH3kXsZiTtR7sr1QUYC9Toz4JbQIxU0bLIIvw00-GUYfFJXaRFYt8Pbjj_uCDVlAH7laM8rXS4U6dr4BT8ZZrQpBTKuRJM08L101N8pnePH9O0fJelBNs8R4ooFJljjB_hI6jVbss=",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                },
+                {
+                  "author": "medicaid_application_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_1105432",
+                          "name": "execute_bigquery_sql",
+                          "response": {
+                            "result": "[{\"NUM_CASE\": \"5GW4DRP\", \"ID_MEDICAID\": \"B234847074\", \"USERNAME\": \"barbaraher76\", \"PASSWORD\": \"wgmjumtryn\", \"EMAIL_ADDRESS\": \"barbara.hernandez1@yahoo.com\", \"PHONE_NUMBER\": 8970321863, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"BARBARA\", \"NAM_LAST\": \"HERNANDEZ\", \"DTE_BIRTH\": 19790923, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"TULSA\", \"ADR_ZIP\": 77758, \"CDE_CAT_REL\": \"CNF\"}, {\"NUM_CASE\": \"9QBCDRC\", \"ID_MEDICAID\": \"B765898859\", \"USERNAME\": \"williamsmi37\", \"PASSWORD\": \"hykphffzho\", \"EMAIL_ADDRESS\": \"william.smith7@gmail.com\", \"PHONE_NUMBER\": 346447042, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"WILLIAM\", \"NAM_LAST\": \"SMITH\", \"DTE_BIRTH\": 19750426, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"OKLAHOMA CITY\", \"ADR_ZIP\": 29674, \"CDE_CAT_REL\": \"CNF\"}, {\"NUM_CASE\": \"OO8W98F\", \"ID_MEDICAID\": \"B499510925\", \"USERNAME\": \"lindamil65\", \"PASSWORD\": \"xcmichdtod\", \"EMAIL_ADDRESS\": \"linda.miller6@yahoo.com\", \"PHONE_NUMBER\": 9025664961, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"LINDA\", \"NAM_LAST\": \"MILLER\", \"DTE_BIRTH\": 19700813, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 65863, \"CDE_CAT_REL\": \"CNF\"}, {\"NUM_CASE\": \"YA7FC2H\", \"ID_MEDICAID\": \"B122535054\", \"USERNAME\": \"elizabethjac80\", \"PASSWORD\": \"nbpmuiohaf\", \"EMAIL_ADDRESS\": \"elizabeth.jackson8@outlook.com\", \"PHONE_NUMBER\": 1457338934, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"ELIZABETH\", \"NAM_LAST\": \"JACKSON\", \"DTE_BIRTH\": 19720920, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 78075, \"CDE_CAT_REL\": \"CNF\"}]"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null
+                      }
+                    ],
+                    "role": "user"
+                  }
+                },
+                {
+                  "author": "medicaid_application_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_320254",
+                          "args": {
+                            "sql_query": "WITH clustered_addresses AS (\n    SELECT ADR_STREET_1\n    FROM `ai-hub-459714.frauddector.syntheticdatafraud`\n    WHERE ADR_STREET_1 IS NOT NULL AND TRIM(ADR_STREET_1) != ''\n    GROUP BY ADR_STREET_1\n    HAVING COUNT(DISTINCT NUM_CASE) > 2\n)\nSELECT COUNT(*) as total_count\nFROM `ai-hub-459714.frauddector.syntheticdatafraud` t\nINNER JOIN clustered_addresses c ON t.ADR_STREET_1 = c.ADR_STREET_1;"
+                          },
+                          "name": "execute_bigquery_sql",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "AY89a1-44XF8ld5iwUKLHJ56fvU9HUxfBDwpPVil5lZ3Mr7T5_q4hVudiVmUXb5EXOpocco0u1FDm5cfQGe1AFwNnFsxh1MoV_mKEFWpttiKar25itBsdMMrR_Xdjm8T1NQHffdP9dbZhN595A9hjz13L_PbjF0SClMT1vWGWHdGOeYRr46sUWPRLBfZjulKjGt_Ao1n3J8_fjWrb-ZczP7_RKqSbzY=",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null
+                      }
+                    ],
+                    "role": "model"
+                  }
+                },
+                {
+                  "author": "medicaid_application_auditor",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_320254",
+                          "name": "execute_bigquery_sql",
+                          "response": {
+                            "result": "[{\"total_count\": 4}]"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null
+                      }
+                    ],
+                    "role": "user"
+                  }
+                }
+              ]
+            },
+            "creation_timestamp": 1787763385.318167,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "medicaid_application_auditor": {
+                  "name": "medicaid_application_auditor",
+                  "instructions": "\n# Role\nYou are the Medicaid Application Auditor. Your core mission is to analyze Medicaid application data extracts and identify highly suspicious, anomalous, or potentially fraudulent submissions. You will evaluate the application data from the connected BigQuery connector. The data you are analyzing is located in BigQuery under the project ID 'ai-hub-459714', dataset 'frauddector', and table 'syntheticdatafraud'. You must analyze the data for both individual anomalies and cross-row matching patterns.\n\n# Core Detection Rules & Data Analysis\nAnalyze the dataset from BigQuery (`ai-hub-459714.frauddector.syntheticdatafraud`) and flag rows that violate the following rules:\n\n1. Credential Recycling: Use of identical PASSWORD or USERNAME across multiple distinct NUM_CASE.\n2. Address Clustering: More than 2 distinct NUM_CASE with the same ADR_STREET_1.\n3. Identity Mismatch: NAM_FIRST AND NAM_LAST do not match or align with their USERNAME, EMAIL_ADDRESS prefix, or password strings.\n4. Sequential Clusters: ADR_STREET_1, EMAIL_ADDRESS, USERNAME, or PASSWORD that follow rapid incremental numeric sequences.\n5. Pregnant members: Same NAM_FIRST and same first four characters in DTE_BIRTH with CDE_CAT_REL of CNF.\n\n# Output Format\nProduce a clean, professional summary of your findings as a Markdown table structured strictly as follows:\nNUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Detailed explanation of what exactly matched\n\nFor the last column (\"Detailed explanation of what exactly matched\"), specify concise descriptions such as: 'ADR_STREET_1 cluster', 'USERNAME cluster', 'PASSWORD cluster', 'EMAIL_ADDRESS cluster', 'Identity mismatch', 'Sequential cluster', or 'Pregnant member cluster'.\n\n# Token & Response Management\nIf the dataset or results are large, do not attempt to output all rows in a single response to avoid hitting token or response limits. Process and display findings in manageable batches (up to 10-15 rows at a time). If a response is cut off or batched, end your output by asking: 'Would you like me to display the next batch of findings?'\n\n# Targeted Query Execution\nWhen a user asks a specific question (e.g., querying a single rule or looking for a specific pattern like pregnant members), restrict your analysis exclusively to that query to ensure a fast, complete, and concise response.\n\n# Fallback for Empty Results\nIf no violations are found for a requested rule or dataset, clearly state 'No violations detected for this criterion' rather than leaving the table blank or throwing an error.\n\n\nYou are an agent. Your internal name is \"medicaid_application_auditor\".",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "google_maps": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Queries the Medicaid application dataset `ai-hub-459714.frauddector.syntheticdatafraud` in BigQuery.\n\n    Args:\n        query_type: Type of query analysis to run. Supported types:\n            - 'all': Fetch raw rows from syntheticdatafraud.\n            - 'credential_recycling': Find duplicate USERNAME or PASSWORD across distinct NUM_CASE.\n            - 'address_clustering': Find ADR_STREET_1 values with more than 2 distinct NUM_CASE.\n            - 'pregnant_members': Find members with CDE_CAT_REL = 'CNF' sharing NAM_FIRST and birth year (first 4 chars of DTE_BIRTH).\n            - 'custom': Custom filter supplied via custom_where_clause.\n        limit: Maximum number of rows to return (default: 50).\n        offset: Row offset for pagination (default: 0).\n        custom_where_clause: Optional SQL WHERE clause when query_type is 'custom'.\n\n    Returns:\n        JSON string containing the queried records or analytical matches.\n    ",
+                          "name": "query_syntheticdatafraud",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "query_type": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": "all",
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              },
+                              "limit": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 50,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "offset": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": 0,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "INTEGER"
+                              },
+                              "custom_where_clause": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": true,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": null,
+                            "property_ordering": null,
+                            "required": null,
+                            "title": null,
+                            "type": "STRING"
+                          },
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Executes an arbitrary BigQuery SQL query against the dataset.\n\n    Args:\n        sql_query: Valid BigQuery Standard SQL string.\n\n    Returns:\n        JSON string containing the query results.\n    ",
+                          "name": "execute_bigquery_sql",
+                          "parameters": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": {
+                              "sql_query": {
+                                "additional_properties": null,
+                                "defs": null,
+                                "ref": null,
+                                "any_of": null,
+                                "default": null,
+                                "description": null,
+                                "enum": null,
+                                "example": null,
+                                "format": null,
+                                "items": null,
+                                "max_items": null,
+                                "max_length": null,
+                                "max_properties": null,
+                                "maximum": null,
+                                "min_items": null,
+                                "min_length": null,
+                                "min_properties": null,
+                                "minimum": null,
+                                "nullable": null,
+                                "pattern": null,
+                                "properties": null,
+                                "property_ordering": null,
+                                "required": null,
+                                "title": null,
+                                "type": "STRING"
+                              }
+                            },
+                            "property_ordering": null,
+                            "required": [
+                              "sql_query"
+                            ],
+                            "title": null,
+                            "type": "OBJECT"
+                          },
+                          "parameters_json_schema": null,
+                          "response": {
+                            "additional_properties": null,
+                            "defs": null,
+                            "ref": null,
+                            "any_of": null,
+                            "default": null,
+                            "description": null,
+                            "enum": null,
+                            "example": null,
+                            "format": null,
+                            "items": null,
+                            "max_items": null,
+                            "max_length": null,
+                            "max_properties": null,
+                            "maximum": null,
+                            "min_items": null,
+                            "min_length": null,
+                            "min_properties": null,
+                            "minimum": null,
+                            "nullable": null,
+                            "pattern": null,
+                            "properties": null,
+                            "property_ordering": null,
+                            "required": null,
+                            "title": null,
+                            "type": "STRING"
+                          },
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_search_retrieval": null,
+                      "parallel_ai_search": null,
+                      "url_context": null,
+                      "mcp_servers": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Check for address clustering in the application data where more than 2 cases share the same street address.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": null,
+            "intermediate_data": null,
+            "creation_timestamp": 0.0,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "rubric_based_final_response_quality_v1",
+              "threshold": 0.8,
+              "criterion": {
+                "threshold": 0.8,
+                "judgeModelOptions": {
+                  "judgeModel": "gemini-3-flash-preview",
+                  "numSamples": 1
+                },
+                "rubrics": [
+                  {
+                    "rubricId": "relevance",
+                    "rubricContent": {
+                      "textProperty": "The response directly addresses the user's query."
+                    }
+                  },
+                  {
+                    "rubricId": "helpfulness",
+                    "rubricContent": {
+                      "textProperty": "The response is helpful and provides useful information."
+                    }
+                  }
+                ]
+              },
+              "custom_function_path": null,
+              "score": 1.0,
+              "eval_status": 1,
+              "details": {
+                "rubric_scores": [
+                  {
+                    "rubric_id": "relevance",
+                    "rationale": "The agent's final answer displays the specific records identified in the tool call that meet the \"address clustering\" criteria defined in the prompt.",
+                    "score": 1.0
+                  },
+                  {
+                    "rubric_id": "helpfulness",
+                    "rationale": "The response provides the specific data requested by the user, formatted according to the provided system instructions, which facilitates the audit process.",
+                    "score": 1.0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___f8607a6e-8450-49aa-974a-184fbf241008",
+      "session_details": {
+        "id": "___eval___session___f8607a6e-8450-49aa-974a-184fbf241008",
+        "app_name": "app",
+        "user_id": "eval_user",
+        "state": {
+          "__llm_request_key__": "372e4ddd-fa3e-45ce-a4d4-be03992d3812"
+        },
+        "events": [
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Check for address clustering in the application data where more than 2 cases share the same street address.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "author": "user",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "68cd8a2c-26ea-4d1c-bb9a-42c69122f102",
+            "timestamp": 1787763379.828185
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": {
+                    "id": "call_1105432",
+                    "args": {
+                      "sql_query": "WITH clustered_addresses AS (\n    SELECT ADR_STREET_1\n    FROM `ai-hub-459714.frauddector.syntheticdatafraud`\n    WHERE ADR_STREET_1 IS NOT NULL AND TRIM(ADR_STREET_1) != ''\n    GROUP BY ADR_STREET_1\n    HAVING COUNT(DISTINCT NUM_CASE) > 2\n)\nSELECT \n    t.NUM_CASE,\n    t.ID_MEDICAID,\n    t.USERNAME,\n    t.PASSWORD,\n    t.EMAIL_ADDRESS,\n    t.PHONE_NUMBER,\n    t.DTE_LAST_LOGON,\n    t.NAM_FIRST,\n    t.NAM_LAST,\n    t.DTE_BIRTH,\n    t.CDE_SEX,\n    t.ADR_STREET_1,\n    t.ADR_STREET_2,\n    t.ADR_CITY,\n    t.ADR_ZIP,\n    t.CDE_CAT_REL\nFROM `ai-hub-459714.frauddector.syntheticdatafraud` t\nINNER JOIN clustered_addresses c ON t.ADR_STREET_1 = c.ADR_STREET_1\nORDER BY t.ADR_STREET_1, t.NUM_CASE\nLIMIT 15;"
+                    },
+                    "name": "execute_bigquery_sql",
+                    "partial_args": null,
+                    "will_continue": null
+                  },
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": "AY89a1-k1gQhdoRPI_HrUSebgqCBAD38zP6lz8LRu9IzCadU7p9o63t_xByvsxKSJ524RTIyfI8j_qkBZEivWuwuX6pHSy9BbX9nj8DniruHw5RdBnJOGsDNzLJIVM8JxPdHdRS7Han_Z5LIvDlFL7Nwy8zIfN84_KzdqsvVeZpC8KeGSVOc6KAxEPxlF9wUDa11p282bJ5bzInbFxBI81VS-Tj8oEuGkWwhO07QOuY7ScpJ1n_Kono3YeYc-_fvFYl1kNPnvaxXDpBvUuNJs1-ZjEfTyDBBj6dLi9RjjtiMqeM4OrJtbiZYWyAJfFxq882h-Fsfi3otFeC2gNqu2a4x15tFB2dO5Sm8fF_4pe7G9oEbwDYbjV96e1UJ6bnnh_4C1RLze-rUcxb3kt45pZ3x74IDK89VfYG8j1nET6m4vthV4Qa6Tlvrv29zQhX5-i-3FCh38_8LCtG_n8zTfhyMOWWoE1_n4enQY3du3oEUgXkbzpnAYVXO-WpaEN6u_c0OaBK5oxmjdRw1ZkyyLerkcoFo__LR81lQcAyIlVF-MG2p6UKAVz0QadkyRmoIfSS6ppg8Oq_CreBWQfW2vdzAKLiQqbAaif0aqROuZjsB2m4z9RmWUf5-T0On42vVFjEL7Fa-dnc6XaQ4SF9yd_VeIXUbqLQACtI60oWOEzKygV0e1Y_kXV0mCeFS1CWeoYBFCbWwTOJrbnBOLVPbsEeedqH6XwPy-uQ9OvgsgHva5rEuycXorSYvUWErhNK4_Hm6lQxloQhq7VGch8GDGveSJ24pF-7t6A2BVd8NctG6YnQyvIddNK56Ai78uKG_ThQeXX-PG1Lo_NxogK9z-6KFGOa178I-U-kY1oxhsv5GuHQGKG3kQ3cD0t2A9M96K408rWGErO795u3jUkvv7o35b4YAvzimufyx1D5P2c2S9gtErwy8Ko6J-BOjs9w43NinMfI77bS7_hLgvb1eHB7gmIuA2w_x4QCo4pFuKajHGnR5dEyE8zE2jy0_-eBHIH7jM8B1GBv71VPA-XpgTP0nbw99hZh95ja88tjRPfaCCMuRtfbFDz7kqv-S9hVzMcuNaDBlasFjDj9F9rlqcF9PXdeKXNmSaRaqm9I-STRl5R_DdvdOWOQ3KCJvWyj08j9PXMcc785jYwuwBqWvrarsxXLFoIxWath6tgDaTmfwXDi2-V16pGMFsiirY3-q0m4ybAFss91teDADuYFmump-_l4muC_B1QlH3kXsZiTtR7sr1QUYC9Toz4JbQIxU0bLIIvw00-GUYfFJXaRFYt8Pbjj_uCDVlAH7laM8rXS4U6dr4BT8ZZrQpBTKuRJM08L101N8pnePH9O0fJelBNs8R4ooFJljjB_hI6jVbss=",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "b14994ec-edac-464e-b50c-d9dc76813cc7"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 332,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 332
+                }
+              ],
+              "prompt_token_count": 1016,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 1016
+                }
+              ],
+              "thoughts_token_count": 276,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 1624,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "author": "medicaid_application_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "b14994ec-edac-464e-b50c-d9dc76813cc7"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": [],
+            "branch": null,
+            "id": "12dbf6f2-0b2e-4d57-82e7-e0fd3671a5ef",
+            "timestamp": 1787763379.829139
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": {
+                    "will_continue": null,
+                    "scheduling": null,
+                    "parts": null,
+                    "id": "call_1105432",
+                    "name": "execute_bigquery_sql",
+                    "response": {
+                      "result": "[{\"NUM_CASE\": \"5GW4DRP\", \"ID_MEDICAID\": \"B234847074\", \"USERNAME\": \"barbaraher76\", \"PASSWORD\": \"wgmjumtryn\", \"EMAIL_ADDRESS\": \"barbara.hernandez1@yahoo.com\", \"PHONE_NUMBER\": 8970321863, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"BARBARA\", \"NAM_LAST\": \"HERNANDEZ\", \"DTE_BIRTH\": 19790923, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"TULSA\", \"ADR_ZIP\": 77758, \"CDE_CAT_REL\": \"CNF\"}, {\"NUM_CASE\": \"9QBCDRC\", \"ID_MEDICAID\": \"B765898859\", \"USERNAME\": \"williamsmi37\", \"PASSWORD\": \"hykphffzho\", \"EMAIL_ADDRESS\": \"william.smith7@gmail.com\", \"PHONE_NUMBER\": 346447042, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"WILLIAM\", \"NAM_LAST\": \"SMITH\", \"DTE_BIRTH\": 19750426, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"OKLAHOMA CITY\", \"ADR_ZIP\": 29674, \"CDE_CAT_REL\": \"CNF\"}, {\"NUM_CASE\": \"OO8W98F\", \"ID_MEDICAID\": \"B499510925\", \"USERNAME\": \"lindamil65\", \"PASSWORD\": \"xcmichdtod\", \"EMAIL_ADDRESS\": \"linda.miller6@yahoo.com\", \"PHONE_NUMBER\": 9025664961, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"LINDA\", \"NAM_LAST\": \"MILLER\", \"DTE_BIRTH\": 19700813, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 65863, \"CDE_CAT_REL\": \"CNF\"}, {\"NUM_CASE\": \"YA7FC2H\", \"ID_MEDICAID\": \"B122535054\", \"USERNAME\": \"elizabethjac80\", \"PASSWORD\": \"nbpmuiohaf\", \"EMAIL_ADDRESS\": \"elizabeth.jackson8@outlook.com\", \"PHONE_NUMBER\": 1457338934, \"DTE_LAST_LOGON\": 20260815, \"NAM_FIRST\": \"ELIZABETH\", \"NAM_LAST\": \"JACKSON\", \"DTE_BIRTH\": 19720920, \"CDE_SEX\": \"F\", \"ADR_STREET_1\": \"4161 WBHRXS DR\", \"ADR_STREET_2\": null, \"ADR_CITY\": \"MOORE\", \"ADR_ZIP\": 78075, \"CDE_CAT_REL\": \"CNF\"}]"
+                    }
+                  },
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "author": "medicaid_application_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "14994bab-987f-4464-9f0e-e469c54a1a8f",
+            "timestamp": 1787763387.267183
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": {
+                    "id": "call_320254",
+                    "args": {
+                      "sql_query": "WITH clustered_addresses AS (\n    SELECT ADR_STREET_1\n    FROM `ai-hub-459714.frauddector.syntheticdatafraud`\n    WHERE ADR_STREET_1 IS NOT NULL AND TRIM(ADR_STREET_1) != ''\n    GROUP BY ADR_STREET_1\n    HAVING COUNT(DISTINCT NUM_CASE) > 2\n)\nSELECT COUNT(*) as total_count\nFROM `ai-hub-459714.frauddector.syntheticdatafraud` t\nINNER JOIN clustered_addresses c ON t.ADR_STREET_1 = c.ADR_STREET_1;"
+                    },
+                    "name": "execute_bigquery_sql",
+                    "partial_args": null,
+                    "will_continue": null
+                  },
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": "AY89a1-44XF8ld5iwUKLHJ56fvU9HUxfBDwpPVil5lZ3Mr7T5_q4hVudiVmUXb5EXOpocco0u1FDm5cfQGe1AFwNnFsxh1MoV_mKEFWpttiKar25itBsdMMrR_Xdjm8T1NQHffdP9dbZhN595A9hjz13L_PbjF0SClMT1vWGWHdGOeYRr46sUWPRLBfZjulKjGt_Ao1n3J8_fjWrb-ZczP7_RKqSbzY=",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "1fd8db5f-70e4-4426-ab1f-f25a0153fbca"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 169,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 169
+                }
+              ],
+              "prompt_token_count": 2484,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 2484
+                }
+              ],
+              "thoughts_token_count": 27,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 2680,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "author": "medicaid_application_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "1fd8db5f-70e4-4426-ab1f-f25a0153fbca"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": [],
+            "branch": null,
+            "id": "0d62e6cd-715e-4d97-bfea-dcc758c68de1",
+            "timestamp": 1787763387.272932
+          },
+          {
+            "model_version": null,
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": {
+                    "will_continue": null,
+                    "scheduling": null,
+                    "parts": null,
+                    "id": "call_320254",
+                    "name": "execute_bigquery_sql",
+                    "response": {
+                      "result": "[{\"total_count\": 4}]"
+                    }
+                  },
+                  "inline_data": null,
+                  "text": null,
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "user"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": null,
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": null,
+            "usage_metadata": null,
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "author": "medicaid_application_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {},
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "7ae4e937-1234-4c82-af9e-e33474b1361d",
+            "timestamp": 1787763391.7506502
+          },
+          {
+            "model_version": "gemini-3.7-flash",
+            "content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "| NUM_CASE | ID_MEDICAID | USERNAME | PASSWORD | EMAIL_ADDRESS | PHONE_NUMBER | DTE_LAST_LOGON | NAM_FIRST | NAM_LAST | DTE_BIRTH | CDE_SEX | ADR_STREET_1 | ADR_STREET_2 | ADR_CITY | ADR_ZIP | CDE_CAT_REL | Detailed explanation of what exactly matched |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| 5GW4DRP | B234847074 | barbaraher76 | wgmjumtryn | barbara.hernandez1@yahoo.com | 8970321863 | 20260815 | BARBARA | HERNANDEZ | 19790923 | F | 4161 WBHRXS DR | *null* | TULSA | 77758 | CNF | ADR_STREET_1 cluster |\n| 9QBCDRC | B765898859 | williamsmi37 | hykphffzho | william.smith7@gmail.com | 346447042 | 20260815 | WILLIAM | SMITH | 19750426 | F | 4161 WBHRXS DR | *null* | OKLAHOMA CITY | 29674 | CNF | ADR_STREET_1 cluster |\n| OO8W98F | B499510925 | lindamil65 | xcmichdtod | linda.miller6@yahoo.com | 9025664961 | 20260815 | LINDA | MILLER | 19700813 | F | 4161 WBHRXS DR | *null* | MOORE | 65863 | CNF | ADR_STREET_1 cluster |\n| YA7FC2H | B122535054 | elizabethjac80 | nbpmuiohaf | elizabeth.jackson8@outlook.com | 1457338934 | 20260815 | ELIZABETH | JACKSON | 19720920 | F | 4161 WBHRXS DR | *null* | MOORE | 78075 | CNF | ADR_STREET_1 cluster |",
+                  "thought": null,
+                  "thought_signature": "AY89a19foeutzratihXamaUF7ZEAWxg8_6WB6gAuZWlTZEX8vaJa0Nma4oNG1xBzcw138AnNWFEvOIk_AB5A8Y2FdiSaVAGgF31LZWk_UpestpWQwqmZAPN8Y__TfGtQzT-F8TnDcCzSUcis6VdnYwWMl5ecoute2kA183syzHOmhNGAzR9fndF3uTvXjB9IPwbgHw02MO4dyQ7xN_EdkK7wAYnHXczLkP5ZGHExMVTHV6P3ZVkSYxoLDaU6bLJT2jXyQoaC79zRtMFSCMzkA21u-m3CGFrW27mOChcRmwqYg60aHOIT9ExzWPVoN5SaQ3z6PJFOKU86P7kiJPh84fOCHbVANYevL5QVZY9-9aXCYocB8auii8Hd9gHElzXAyHAvdx09QDNOEMwY0A1mXr3rUiFVQe-ZiZmRQIOD6G7w7xklWzZP8zK6Pmv6U6rtxR_q8pmw6k0mpQDJ1POk7-AidoTPDWqO2qHRU6rXfc6t-B4cOdBJjSjQQLxKWvLONK9dIKKNFEwsnQ5wHPbR24DstxRowFh5oPh0-UYFkSwLMg_XlRGhvPbcxoH2MkWJs3Sskhb9gZexTMFeGizHKE3TCGVQ2vGYJ7liHhU_dwfgh4HvOTvOtW3qvhHR3L4K56SV2yYeTgjuPB0qnXVgUrQPy7PzUQ==",
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null
+                }
+              ],
+              "role": "model"
+            },
+            "grounding_metadata": null,
+            "partial": null,
+            "turn_complete": null,
+            "finish_reason": "STOP",
+            "error_code": null,
+            "error_message": null,
+            "interrupted": null,
+            "custom_metadata": {
+              "__llm_request_key__": "372e4ddd-fa3e-45ce-a4d4-be03992d3812"
+            },
+            "usage_metadata": {
+              "cache_tokens_details": null,
+              "cached_content_token_count": null,
+              "candidates_token_count": 605,
+              "candidates_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 605
+                }
+              ],
+              "prompt_token_count": 2693,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 2693
+                }
+              ],
+              "thoughts_token_count": 129,
+              "tool_use_prompt_token_count": null,
+              "tool_use_prompt_tokens_details": null,
+              "total_token_count": 3427,
+              "traffic_type": "ON_DEMAND"
+            },
+            "live_session_resumption_update": null,
+            "live_session_id": null,
+            "go_away": null,
+            "input_transcription": null,
+            "output_transcription": null,
+            "avg_logprobs": null,
+            "logprobs_result": null,
+            "cache_metadata": null,
+            "citation_metadata": null,
+            "interaction_id": null,
+            "invocation_id": "e-ee538f67-4af9-4bd1-a79a-52586a64ea01",
+            "author": "medicaid_application_auditor",
+            "actions": {
+              "skip_summarization": null,
+              "state_delta": {
+                "__llm_request_key__": "372e4ddd-fa3e-45ce-a4d4-be03992d3812"
+              },
+              "artifact_delta": {},
+              "transfer_to_agent": null,
+              "escalate": null,
+              "requested_auth_configs": {},
+              "requested_tool_confirmations": {},
+              "compaction": null,
+              "end_of_agent": null,
+              "agent_state": null,
+              "rewind_before_invocation_id": null,
+              "render_ui_widgets": null
+            },
+            "long_running_tool_ids": null,
+            "branch": null,
+            "id": "ec813b03-7dcc-44ed-8541-0e81200500e0",
+            "timestamp": 1787763391.753772
+          }
+        ],
+        "last_update_time": 1787763391.753772
+      },
+      "user_id": "eval_user"
+    }
+  ],
+  "creation_timestamp": 1787763411.289997
+}
