@@ -150,6 +150,8 @@ dmypy.json
 
 
 tmp*
+app_tmp*
+*_tmp*
 
 # Node
 **/node_modules

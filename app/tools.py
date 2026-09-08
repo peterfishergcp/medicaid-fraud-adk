@@ -127,8 +127,8 @@ def audit_credential_recycling(
     try:
         query_job = client.query(sql, job_config=job_config)
         return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
-    except Exception as e:
-        logger.error("Error executing credential recycling audit: %s", type(e).__name__)
+    except Exception:
+        logger.error("Error executing credential_recycling audit")
         return json.dumps(
             {"error": "An error occurred while analyzing credential recycling."}
         )
@@ -180,8 +180,8 @@ def audit_address_clustering(
     try:
         query_job = client.query(sql, job_config=job_config)
         return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
-    except Exception as e:
-        logger.error("Error executing address clustering audit: %s", type(e).__name__)
+    except Exception:
+        logger.error("Error executing address_clustering audit")
         return json.dumps(
             {"error": "An error occurred while analyzing address clustering."}
         )
@@ -230,8 +230,8 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
     try:
         query_job = client.query(sql, job_config=job_config)
         return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
-    except Exception as e:
-        logger.error("Error executing pregnant member audit: %s", type(e).__name__)
+    except Exception:
+        logger.error("Error executing pregnant_members audit")
         return json.dumps(
             {"error": "An error occurred while analyzing pregnant member records."}
         )
@@ -265,52 +265,44 @@ def filter_applications(
     safe_limit, safe_offset = _clamp_bounds(limit, offset)
 
     client = get_bq_client()
-    conditions = []
+    sql = f"""
+    SELECT *
+    FROM `{FULL_TABLE_REF}`
+    WHERE (@case_number IS NULL OR TRIM(NUM_CASE) = TRIM(@case_number))
+      AND (@first_name IS NULL OR LOWER(TRIM(NAM_FIRST)) = LOWER(TRIM(@first_name)))
+      AND (@last_name IS NULL OR LOWER(TRIM(NAM_LAST)) = LOWER(TRIM(@last_name)))
+      AND (@email IS NULL OR LOWER(TRIM(EMAIL_ADDRESS)) = LOWER(TRIM(@email)))
+      AND (@city IS NULL OR LOWER(TRIM(ADR_CITY)) = LOWER(TRIM(@city)))
+      AND (@zip_code IS NULL OR TRIM(CAST(ADR_ZIP AS STRING)) = TRIM(@zip_code))
+    LIMIT @limit OFFSET @offset
+    """
     params: list[bigquery.ScalarQueryParameter] = [
+        bigquery.ScalarQueryParameter(
+            "case_number", "STRING", case_number.strip() if case_number else None
+        ),
+        bigquery.ScalarQueryParameter(
+            "first_name", "STRING", first_name.strip() if first_name else None
+        ),
+        bigquery.ScalarQueryParameter(
+            "last_name", "STRING", last_name.strip() if last_name else None
+        ),
+        bigquery.ScalarQueryParameter(
+            "email", "STRING", email.strip() if email else None
+        ),
+        bigquery.ScalarQueryParameter("city", "STRING", city.strip() if city else None),
+        bigquery.ScalarQueryParameter(
+            "zip_code", "STRING", str(zip_code).strip() if zip_code else None
+        ),
         bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
         bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
     ]
 
-    if case_number:
-        conditions.append("TRIM(NUM_CASE) = TRIM(@case_number)")
-        params.append(
-            bigquery.ScalarQueryParameter("case_number", "STRING", case_number.strip())
-        )
-    if first_name:
-        conditions.append("LOWER(TRIM(NAM_FIRST)) = LOWER(TRIM(@first_name))")
-        params.append(
-            bigquery.ScalarQueryParameter("first_name", "STRING", first_name.strip())
-        )
-    if last_name:
-        conditions.append("LOWER(TRIM(NAM_LAST)) = LOWER(TRIM(@last_name))")
-        params.append(
-            bigquery.ScalarQueryParameter("last_name", "STRING", last_name.strip())
-        )
-    if email:
-        conditions.append("LOWER(TRIM(EMAIL_ADDRESS)) = LOWER(TRIM(@email))")
-        params.append(bigquery.ScalarQueryParameter("email", "STRING", email.strip()))
-    if city:
-        conditions.append("LOWER(TRIM(ADR_CITY)) = LOWER(TRIM(@city))")
-        params.append(bigquery.ScalarQueryParameter("city", "STRING", city.strip()))
-    if zip_code:
-        conditions.append("TRIM(CAST(ADR_ZIP AS STRING)) = TRIM(@zip_code)")
-        params.append(
-            bigquery.ScalarQueryParameter("zip_code", "STRING", str(zip_code).strip())
-        )
-
-    where_clause = " AND ".join(conditions) if conditions else "1=1"
-    sql = f"""
-    SELECT *
-    FROM `{FULL_TABLE_REF}`
-    WHERE {where_clause}
-    LIMIT @limit OFFSET @offset
-    """
     job_config = bigquery.QueryJobConfig(
         maximum_bytes_billed=MAX_BYTES_BILLED, query_parameters=params
     )
     try:
         query_job = client.query(sql, job_config=job_config)
         return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
-    except Exception as e:
-        logger.error("Error executing application filter: %s", type(e).__name__)
+    except Exception:
+        logger.error("Error executing application filter")
         return json.dumps({"error": "An error occurred while querying applications."})

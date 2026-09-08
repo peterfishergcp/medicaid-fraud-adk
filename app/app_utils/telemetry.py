@@ -19,7 +19,8 @@ import os
 def setup_telemetry() -> str | None:
     """Configure OpenTelemetry and GenAI telemetry with GCS upload."""
 
-    bucket = os.environ.get("LOGS_BUCKET_NAME")
+    raw_bucket = os.environ.get("LOGS_BUCKET_NAME")
+    bucket = raw_bucket.removeprefix("gs://").rstrip("/") if raw_bucket else None
     capture_content = os.environ.get(
         "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "false"
     )
@@ -45,7 +46,7 @@ def setup_telemetry() -> str | None:
         )
     else:
         logging.info(
-            "Prompt-response logging disabled (set LOGS_BUCKET_NAME=gs://your-bucket and OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT to enable)"
+            "Prompt-response logging disabled (set LOGS_BUCKET_NAME=your-bucket and OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT to enable)"
         )
 
     return bucket

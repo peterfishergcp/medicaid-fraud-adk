@@ -21,6 +21,7 @@ with the latest Vertex AI Reasoning Engine runtime ID.
 
 import argparse
 import logging
+import shutil
 import subprocess
 import sys
 
@@ -41,9 +42,10 @@ DESCRIPTION = "Analyzes Medicaid application extracts to identify highly suspici
 
 def get_gcp_access_token() -> str:
     """Retrieves Google Cloud IAM OAuth2 access token via gcloud."""
+    gcloud_path = shutil.which("gcloud") or "gcloud"
     try:
         return subprocess.check_output(
-            ["gcloud", "auth", "print-access-token"], text=True
+            [gcloud_path, "auth", "print-access-token"], text=True
         ).strip()
     except Exception as e:
         logger.error(f"Failed to get GCP access token: {e}")
@@ -83,8 +85,9 @@ def cleanup_and_publish(reasoning_engine_uri: str, app_uri: str, token: str) -> 
 
     # Register the newest agent via agents-cli
     logger.info(f"Registering new Reasoning Engine into {app_id}...")
+    uv_path = shutil.which("uv") or "uv"
     cmd = [
-        "uv",
+        uv_path,
         "run",
         "agents-cli",
         "publish",

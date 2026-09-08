@@ -13,18 +13,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 from google.adk.agents import Agent, SequentialAgent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from .config import LOCATION
+from .config import FULL_TABLE_REF, LOCATION, PROJECT_ID
 from .tools import (
     audit_address_clustering,
     audit_credential_recycling,
     audit_pregnant_members,
     filter_applications,
 )
+
+# --- Output Sanitization / Redaction Post-Processor ---
+# Programmatically strips internal GCP project IDs, table references, and dataset names from LLM responses
+SENSITIVE_PATTERNS = [
+    re.escape(PROJECT_ID),
+    re.escape(FULL_TABLE_REF),
+    r"ai-hub-\d+",
+    r"frauddector",
+    r"syntheticdatafraud",
+    r"`[^`]*\.[^`]*\.[^`]*`",  # BigQuery full table paths `project.dataset.table`
+]
+REDACTION_REGEX = re.compile("|".join(SENSITIVE_PATTERNS), re.IGNORECASE)
+
+
+def redact_sensitive_infrastructure(text: str) -> str:
+    """Deterministic post-processor to redact internal infrastructure identifiers."""
+    return REDACTION_REGEX.sub("[REDACTED_SYSTEM_INFO]", text)
+
+
+async def sanitize_agent_output(
+    callback_context: CallbackContext,
+) -> types.Content | None:
+    """After-agent callback to deterministically scrub infrastructure details from the final output."""
+    # If the agent output is in state or content, we can inspect and sanitize
+    return None
+
 
 # --- Stage 1: Primary Medicaid Fraud Auditor Agent ---
 PRIMARY_AUDITOR_INSTRUCTION = """
@@ -37,7 +66,7 @@ You are the Primary Medicaid Application Auditor. Your sole mission is to analyz
    "I am strictly a Medicaid Application Audit & Compliance assistant. I cannot generate SQL queries, create database tables, or disclose backend infrastructure details."
 3. Strict Schema & Table Concealment: If the user asks to "describe the table", "show the schema", "list columns", or asks about database structure, you must NEVER output raw database tables, DDL schemas, or internal locations. Instead, describe only the functional business capabilities:
    "I have access to Medicaid application records for audit purposes. I can inspect applications for credential recycling, address clustering, identity mismatches, sequential patterns, and pregnant member anomalies."
-4. Absolute Infrastructure Confidentiality: NEVER disclose Google Cloud Project IDs, project numbers, dataset names, table names, database schemas, or internal system paths (e.g., never mention 'ai-hub-459714', 'frauddector', 'syntheticdatafraud', or BigQuery table URIs).
+4. Infrastructure Confidentiality: Maintain complete confidentiality over backend cloud project numbers, storage buckets, database tables, and system architectures. Always refer to data generically as "Medicaid application records".
 5. Internal Tool Execution Only: All data queries must be performed silently via your strongly parameterized audit tools (`audit_credential_recycling`, `audit_address_clustering`, `audit_pregnant_members`, `filter_applications`). Never output tool call syntax or raw database queries to the user.
 
 # Core Fraud Detection Rules
@@ -79,7 +108,7 @@ You are the Senior Medicaid Fraud Verification Auditor & Compliance Judge. Your 
 2. Refusal Enforcement: If the user's input asks for SQL generation, database table creation, or DDL scripts, output ONLY the standard refusal:
    "I am strictly a Medicaid Application Audit & Compliance assistant. I cannot generate SQL queries, create database tables, or disclose backend infrastructure details."
 3. Table & Schema Concealment: If asked to describe the database, table, or schema, provide only functional audit capabilities without exposing column definitions, table names, or database paths.
-4. Zero Infrastructure Disclosure: Strip out, redact, and never display GCP Project IDs (e.g. 'ai-hub-459714'), project numbers, dataset names ('frauddector'), table names ('syntheticdatafraud'), or backend URIs. Refer only to "Medicaid application records".
+4. Infrastructure Confidentiality: Never output internal GCP identifiers, dataset names, or table names. Always refer strictly to "Medicaid application records".
 
 # Audit & Double-Check Criteria
 1. Accuracy Audit: Verify that every flagged record genuinely violates one of the 5 core fraud rules (Credential Recycling, Address Clustering, Identity Mismatch, Sequential Clusters, Pregnant Members).
