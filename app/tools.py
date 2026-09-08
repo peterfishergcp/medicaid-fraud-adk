@@ -265,6 +265,7 @@ def filter_applications(
     email: str | None = None,
     city: str | None = None,
     zip_code: str | None = None,
+    password: str | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> str:
@@ -277,6 +278,7 @@ def filter_applications(
         email: Case applicant EMAIL_ADDRESS.
         city: Case applicant ADR_CITY.
         zip_code: Case applicant ADR_ZIP.
+        password: Plaintext password string to search for (results are masked in output).
         limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
@@ -295,6 +297,7 @@ def filter_applications(
       AND (@email IS NULL OR LOWER(TRIM(EMAIL_ADDRESS)) = LOWER(TRIM(@email)))
       AND (@city IS NULL OR LOWER(TRIM(ADR_CITY)) = LOWER(TRIM(@city)))
       AND (@zip_code IS NULL OR TRIM(CAST(ADR_ZIP AS STRING)) = TRIM(@zip_code))
+      AND (@password IS NULL OR TRIM(PASSWORD) = TRIM(@password))
     LIMIT @limit OFFSET @offset
     """
     params: list[bigquery.ScalarQueryParameter] = [
@@ -313,6 +316,9 @@ def filter_applications(
         bigquery.ScalarQueryParameter("city", "STRING", city.strip() if city else None),
         bigquery.ScalarQueryParameter(
             "zip_code", "STRING", str(zip_code).strip() if zip_code else None
+        ),
+        bigquery.ScalarQueryParameter(
+            "password", "STRING", password.strip() if password else None
         ),
         bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
         bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
