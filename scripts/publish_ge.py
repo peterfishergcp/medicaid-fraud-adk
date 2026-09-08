@@ -52,8 +52,14 @@ def get_gcp_access_token() -> str:
         sys.exit(1)
 
 
-def cleanup_and_publish(reasoning_engine_uri: str, app_uri: str, token: str) -> None:
-    """Removes previous agent registrations matching DISPLAY_NAME and registers the new runtime."""
+def cleanup_and_publish(
+    reasoning_engine_uri: str,
+    app_uri: str,
+    token: str,
+    dry_run: bool = False,
+    force: bool = True,
+) -> None:
+    """Removes previous agent registrations strictly matching exact DISPLAY_NAME and registers the new runtime."""
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     app_id = app_uri.split("/")[-1]
     logger.info(f"Checking existing registrations in app: {app_id}...")
@@ -67,8 +73,21 @@ def cleanup_and_publish(reasoning_engine_uri: str, app_uri: str, token: str) -> 
                 name = agent.get("name", "")
                 agent_display = agent.get("displayName", "")
                 agent_id = name.split("/")[-1]
-                # If it's an existing instance of our auditor agent, delete it to prevent conflict/split traffic
-                if agent_display == DISPLAY_NAME or "medicaid" in agent_display.lower():
+                # Strictly match on exact unique display name (no broad substring matching)
+                if agent_display == DISPLAY_NAME:
+                    if dry_run:
+                        logger.info(
+                            f"[DRY RUN] Would delete exact match agent: {agent_id} ({agent_display})"
+                        )
+                        continue
+                    if not force:
+                        confirm = input(
+                            f"Delete existing agent registration '{agent_display}' ({agent_id})? [y/N]: "
+                        )
+                        if confirm.lower() != "y":
+                            logger.info(f"Skipping deletion of {agent_id}.")
+                            continue
+
                     logger.info(
                         f"Removing outdated agent registration: {agent_id} ({agent_display})..."
                     )
@@ -82,6 +101,12 @@ def cleanup_and_publish(reasoning_engine_uri: str, app_uri: str, token: str) -> 
                         logger.warning(f"Could not delete {agent_id}: {del_resp.text}")
     except Exception as e:
         logger.warning(f"Error checking existing agent registrations: {e}")
+
+    if dry_run:
+        logger.info(
+            f"[DRY RUN] Would register new Reasoning Engine {reasoning_engine_uri} into {app_id}"
+        )
+        return
 
     # Register the newest agent via agents-cli
     logger.info(f"Registering new Reasoning Engine into {app_id}...")
@@ -114,7 +139,7 @@ def cleanup_and_publish(reasoning_engine_uri: str, app_uri: str, token: str) -> 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Publish ADK Agent to Gemini Enterprise with automatic cleanup."
+        description="Publish ADK Agent to Gemini Enterprise with safe exact-match cleanup."
     )
     parser.add_argument(
         "--runtime-id", required=True, help="Full Reasoning Engine Resource URI"
@@ -124,6 +149,16 @@ def main() -> None:
         nargs="*",
         default=DEFAULT_APPS,
         help="Target Gemini Enterprise App URIs (or set GEMINI_ENTERPRISE_APPS env var)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Simulate cleanup and registration without modifying Gemini Enterprise.",
+    )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Prompt for explicit confirmation before deleting any existing registration.",
     )
     args = parser.parse_args()
 
@@ -136,7 +171,13 @@ def main() -> None:
 
     token = get_gcp_access_token()
     for app_uri in args.apps:
-        cleanup_and_publish(args.runtime_id, app_uri, token)
+        cleanup_and_publish(
+            args.runtime_id,
+            app_uri,
+            token,
+            dry_run=args.dry_run,
+            force=not args.interactive,
+        )
 
 
 if __name__ == "__main__":
