@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 import pytest
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
@@ -38,7 +39,12 @@ def test_agent_stream() -> None:
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
     message = types.Content(
-        role="user", parts=[types.Part.from_text(text="Audit Medicaid applications for credential recycling")]
+        role="user",
+        parts=[
+            types.Part.from_text(
+                text="Audit Medicaid applications for credential recycling"
+            )
+        ],
     )
 
     events = list(

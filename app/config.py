@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,7 +21,11 @@ load_dotenv()
 # Google Cloud project & region configuration
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "ai-hub-459714")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
-USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in ("true", "1", "t")
+USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in (
+    "true",
+    "1",
+    "t",
+)
 
 # BigQuery dataset and table configuration
 DATASET_ID = os.getenv("BIGQUERY_DATASET", "frauddetector")
