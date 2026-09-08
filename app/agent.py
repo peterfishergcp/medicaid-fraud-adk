@@ -13,27 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import google.auth
-
 from google.adk.agents import Agent, SequentialAgent
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from .tools import query_syntheticdatafraud, execute_bigquery_sql
-
-# Load environment variables (from .env or shell environment)
-_, default_project = google.auth.default()
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or default_project or "your-gcp-project-id"
-LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
-DATASET_NAME = os.environ.get("BIGQUERY_DATASET", "frauddetector")
-TABLE_NAME = os.environ.get("BIGQUERY_TABLE", "syntheticdatafraud")
-FULL_TABLE_REF = f"{PROJECT_ID}.{DATASET_NAME}.{TABLE_NAME}"
-
-os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
-os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
-os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
+from app.config import FULL_TABLE_REF
+from app.tools import (
+    audit_address_clustering,
+    audit_credential_recycling,
+    audit_pregnant_members,
+    execute_read_only_bigquery_sql,
+    filter_applications,
+)
 
 # --- Stage 1: Primary Medicaid Fraud Auditor Agent ---
 PRIMARY_AUDITOR_INSTRUCTION = f"""
@@ -48,7 +40,8 @@ You are the Primary Medicaid Application Auditor. Your mission is to query BigQu
 5. Pregnant members: Same NAM_FIRST and same birth year (first 4 characters of DTE_BIRTH) with CDE_CAT_REL = 'CNF'.
 
 # Execution Guidelines
-- Query the BigQuery dataset using available tools (`query_syntheticdatafraud` or `execute_bigquery_sql`).
+- Use the specialized audit tools (`audit_credential_recycling`, `audit_address_clustering`, `audit_pregnant_members`, `filter_applications`) whenever possible.
+- For custom queries or aggregated analysis, use `execute_read_only_bigquery_sql`.
 - Compile all flagged rows into an initial structured Markdown draft.
 - Keep output concise (10-15 rows per response batch if large).
 """
@@ -60,7 +53,13 @@ primary_fraud_auditor = Agent(
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=PRIMARY_AUDITOR_INSTRUCTION,
-    tools=[query_syntheticdatafraud, execute_bigquery_sql],
+    tools=[
+        audit_credential_recycling,
+        audit_address_clustering,
+        audit_pregnant_members,
+        filter_applications,
+        execute_read_only_bigquery_sql,
+    ],
     output_key="draft_findings",
 )
 
