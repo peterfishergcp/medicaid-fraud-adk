@@ -13,9 +13,13 @@
 # limitations under the License.
 
 import os
+import time
+from collections import defaultdict
+from typing import Annotated
 
 import google.auth
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.adk.cli.fast_api import get_fast_api_app
 from google.cloud import logging as google_cloud_logging
 
@@ -50,16 +54,63 @@ app: FastAPI = get_fast_api_app(
 app.title = "medicaid-fraud-adk"
 app.description = "API for interacting with the Agent medicaid-fraud-adk"
 
+# Simple token/auth verification for secure internal endpoint access
+BEARER_AUTH = HTTPBearer(auto_error=False)
+EXPECTED_API_KEY = os.environ.get("FEEDBACK_API_KEY")
 
-@app.post("/feedback")
+# Simple in-memory sliding-window rate limiter: max 10 requests per minute per client IP
+RATE_LIMIT_WINDOW = 60  # seconds
+MAX_REQUESTS_PER_WINDOW = 10
+_request_history: dict[str, list[float]] = defaultdict(list)
+
+
+def verify_feedback_auth(
+    x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
+    bearer: Annotated[HTTPAuthorizationCredentials | None, Depends(BEARER_AUTH)] = None,
+) -> bool:
+    """Verifies that the request provides valid API Key or Bearer token credentials when configured."""
+    if EXPECTED_API_KEY:
+        if x_api_key == EXPECTED_API_KEY:
+            return True
+        if bearer and bearer.credentials == EXPECTED_API_KEY:
+            return True
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing authentication credentials for feedback submission.",
+        )
+    return True
+
+
+def rate_limiter(request: Request) -> None:
+    """Enforces rate limiting based on client host address."""
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    timestamps = _request_history[client_ip]
+
+    # Purge timestamps outside current window
+    _request_history[client_ip] = [
+        ts for ts in timestamps if now - ts < RATE_LIMIT_WINDOW
+    ]
+
+    if len(_request_history[client_ip]) >= MAX_REQUESTS_PER_WINDOW:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please wait before submitting more feedback.",
+        )
+    _request_history[client_ip].append(now)
+
+
+@app.post(
+    "/feedback", dependencies=[Depends(rate_limiter), Depends(verify_feedback_auth)]
+)
 def collect_feedback(feedback: Feedback) -> dict[str, str]:
-    """Collect and log feedback.
+    """Collect and log feedback with authentication and rate limiting.
 
     Args:
-        feedback: The feedback data to log
+        feedback: The validated feedback data to log.
 
     Returns:
-        Success message
+        Success message.
     """
     logger.log_struct(feedback.model_dump(), severity="INFO")
     return {"status": "success"}

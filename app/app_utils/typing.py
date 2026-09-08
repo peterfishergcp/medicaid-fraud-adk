@@ -36,10 +36,12 @@ class Request(BaseModel):
 
 
 class Feedback(BaseModel):
-    """Represents feedback for a conversation."""
+    """Represents feedback for a conversation with strict validation constraints."""
 
-    score: int | float
-    text: str | None = ""
+    score: float = Field(..., ge=1, le=5, description="Feedback rating between 1 and 5")
+    text: str | None = Field(
+        default="", max_length=1000, description="Feedback text max 1000 chars"
+    )
     log_type: Literal["feedback"] = "feedback"
     service_name: Literal["medicaid-fraud-adk"] = "medicaid-fraud-adk"
     user_id: str = Field(default_factory=lambda: str(uuid.uuid4()))

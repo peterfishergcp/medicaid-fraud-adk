@@ -21,6 +21,7 @@ with the latest Vertex AI Reasoning Engine runtime ID.
 
 import argparse
 import logging
+import os
 import shutil
 import subprocess
 import sys
@@ -32,10 +33,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DEFAULT_APPS = [
-    "projects/726122012742/locations/global/collections/default_collection/engines/frauddectorapp_1787760680542",
-    "projects/726122012742/locations/global/collections/default_collection/engines/agentspace-adk_1749611082035",
-]
+DEFAULT_APPS_ENV = os.environ.get("GEMINI_ENTERPRISE_APPS", "")
+DEFAULT_APPS = [app.strip() for app in DEFAULT_APPS_ENV.split(",") if app.strip()]
+
 DISPLAY_NAME = "Medicaid Application Auditor"
 DESCRIPTION = "Analyzes Medicaid application extracts to identify highly suspicious, anomalous, or potentially fraudulent submissions using Gemini 3.8 Flash."
 
@@ -120,9 +120,19 @@ def main() -> None:
         "--runtime-id", required=True, help="Full Reasoning Engine Resource URI"
     )
     parser.add_argument(
-        "--apps", nargs="*", default=DEFAULT_APPS, help="Gemini Enterprise App URIs"
+        "--apps",
+        nargs="*",
+        default=DEFAULT_APPS,
+        help="Target Gemini Enterprise App URIs (or set GEMINI_ENTERPRISE_APPS env var)",
     )
     args = parser.parse_args()
+
+    if not args.apps:
+        logger.error(
+            "No Gemini Enterprise target application URIs provided. "
+            "Please specify via --apps flag or GEMINI_ENTERPRISE_APPS environment variable."
+        )
+        sys.exit(1)
 
     token = get_gcp_access_token()
     for app_uri in args.apps:

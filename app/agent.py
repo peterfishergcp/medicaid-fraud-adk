@@ -44,6 +44,8 @@ REDACTION_REGEX = re.compile("|".join(SENSITIVE_PATTERNS), re.IGNORECASE)
 
 def redact_sensitive_infrastructure(text: str) -> str:
     """Deterministic post-processor to redact internal infrastructure identifiers."""
+    if not text or not isinstance(text, str):
+        return text
     return REDACTION_REGEX.sub("[REDACTED_SYSTEM_INFO]", text)
 
 
@@ -51,7 +53,39 @@ async def sanitize_agent_output(
     callback_context: CallbackContext,
 ) -> types.Content | None:
     """After-agent callback to deterministically scrub infrastructure details from the final output."""
-    # If the agent output is in state or content, we can inspect and sanitize
+    # Check session state for draft findings or any buffered texts
+    if "draft_findings" in callback_context.state:
+        raw_draft = callback_context.state["draft_findings"]
+        if isinstance(raw_draft, str):
+            callback_context.state["draft_findings"] = redact_sensitive_infrastructure(
+                raw_draft
+            )
+
+    # Inspect the most recent event content from this agent if present
+    if hasattr(callback_context, "session") and callback_context.session:
+        events = getattr(callback_context.session, "events", [])
+        if events:
+            last_event = events[-1]
+            if (
+                hasattr(last_event, "content")
+                and last_event.content
+                and hasattr(last_event.content, "parts")
+            ):
+                modified = False
+                new_parts = []
+                for part in last_event.content.parts:
+                    if hasattr(part, "text") and part.text:
+                        clean_text = redact_sensitive_infrastructure(part.text)
+                        if clean_text != part.text:
+                            modified = True
+                        new_parts.append(types.Part(text=clean_text))
+                    else:
+                        new_parts.append(part)
+                if modified:
+                    return types.Content(
+                        parts=new_parts,
+                        role=getattr(last_event.content, "role", "model"),
+                    )
     return None
 
 
@@ -96,6 +130,7 @@ primary_fraud_auditor = Agent(
         filter_applications,
     ],
     output_key="draft_findings",
+    after_agent_callback=sanitize_agent_output,
 )
 
 # --- Stage 2: Fraud Verification & Double-Check Judge Agent ---
@@ -134,12 +169,14 @@ fraud_verification_judge = Agent(
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=JUDGE_INSTRUCTION,
+    after_agent_callback=sanitize_agent_output,
 )
 
 # Multi-Agent Sequential Pipeline
 medicaid_fraud_pipeline = SequentialAgent(
     name="medicaid_fraud_pipeline",
     sub_agents=[primary_fraud_auditor, fraud_verification_judge],
+    after_agent_callback=sanitize_agent_output,
 )
 
 root_agent = medicaid_fraud_pipeline

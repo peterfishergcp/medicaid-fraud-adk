@@ -19,7 +19,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Google Cloud project & region configuration
-PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "ai-hub-459714")
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
+if not PROJECT_ID:
+    # Check fallback standard GCP env vars before raising
+    PROJECT_ID = os.getenv("GCP_PROJECT") or os.getenv("GCLOUD_PROJECT")
+
+if not PROJECT_ID:
+    raise ValueError(
+        "GOOGLE_CLOUD_PROJECT environment variable must be set. "
+        "Please provide a valid Google Cloud Project ID via environment or .env file."
+    )
+
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
 USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in (
     "true",
@@ -31,5 +41,5 @@ USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in (
 DATASET_ID = os.getenv("BIGQUERY_DATASET", "frauddector")
 TABLE_ID = os.getenv("BIGQUERY_TABLE", "syntheticdatafraud")
 
-# Fully qualified BigQuery table reference (e.g. `ai-hub-459714.frauddetector.syntheticdatafraud`)
+# Fully qualified BigQuery table reference (e.g. `project_id.dataset_id.table_id`)
 FULL_TABLE_REF = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
