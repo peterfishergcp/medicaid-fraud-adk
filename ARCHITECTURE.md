@@ -23,7 +23,7 @@ flowchart TD
         Pipeline -->|Stage 1: Detect Pattern Candidates| PrimaryAuditor[primary_fraud_auditor Sub-Agent]
         PrimaryAuditor -->|Writes draft_findings| State[(Session State)]
         State -->|Passes draft_findings| JudgeAgent[fraud_verification_judge Sub-Agent]
-        JudgeAgent -->|Stage 2: Cross-Case Validation & Scoring| VerifyStep[verify_case_record Validation]
+        JudgeAgent -->|Stage 2: Cross-Case Validation & Scoring| VerifyStep[verify_case_records Batch Validation]
     end
 
     subgraph Data & Query Layer
@@ -94,7 +94,9 @@ flowchart TD
     - **MEDIUM**: First-party identity/name mismatches without shared credentials or addresses.
     - **LOW**: Minor anomalies with no detected cross-account collisions.
 - **Assigned Tools**:
-  - `verify_case_record`
+  - `verify_case_records` (Batch cross-case collision validator)
+  - `verify_case_record` (Single-case spot check validator)
+  - `filter_applications` (Demographic drilldown)
 
 ---
 

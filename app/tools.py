@@ -15,6 +15,7 @@
 import hashlib
 import json
 import logging
+from itertools import islice
 from typing import Any
 
 from google.cloud import bigquery
@@ -72,11 +73,9 @@ def _sanitize_rows(
         List of sanitized dictionary rows.
     """
     results: list[dict[str, Any]] = []
-    for count, row in enumerate(query_job):
-        if count >= max_rows:
-            break
+    for row in islice(query_job, max_rows):
         row_dict = dict(row)
-        if "PASSWORD" in row_dict and row_dict["PASSWORD"] is not None:
+        if row_dict.get("PASSWORD") is not None:
             row_dict["PASSWORD"] = _mask_password(row_dict["PASSWORD"])
         for k, v in row_dict.items():
             if v is not None and not isinstance(v, (str, int, float, bool)):
@@ -201,7 +200,7 @@ def audit_address_clustering(
     client = get_bq_client()
     sql = f"""
     WITH clustered_addrs AS (
-        SELECT 
+        SELECT
             LOWER(TRIM(ADR_STREET_1)) AS norm_street
         FROM `{FULL_TABLE_REF}`
         WHERE ADR_STREET_1 IS NOT NULL
@@ -253,7 +252,7 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
     client = get_bq_client()
     sql = f"""
     WITH pregnant_clusters AS (
-        SELECT 
+        SELECT
             LOWER(TRIM(NAM_FIRST)) as norm_first,
             SUBSTR(CAST(DTE_BIRTH AS STRING), 1, 4) as birth_year
         FROM `{FULL_TABLE_REF}`
@@ -371,6 +370,157 @@ def filter_applications(
         return json.dumps({"error": "An error occurred while querying applications."})
 
 
+def verify_case_records(case_numbers: str) -> str:
+    """Verifies one or more Medicaid application case records and analyzes cross-case collision metrics.
+
+    Used by the Senior Verification Judge to spot-check or batch-verify candidate cases,
+    inspect full applicant records, and compute exact collision metrics across distinct cases
+    sharing identical street addresses, usernames, or passwords.
+
+    Args:
+        case_numbers: A single case number or a comma-separated list of case numbers
+                     (e.g., 'YA7FC2H' or 'YA7FC2H, F97E1H7, 5GW4DRP').
+
+    Returns:
+        JSON string containing the verification status, target case records, and collision counts.
+    """
+    if not case_numbers or not str(case_numbers).strip():
+        return json.dumps({"error": "case_numbers parameter is required."})
+
+    # Parse and clean case numbers (split by comma or whitespace, uppercase, remove duplicates)
+    raw_tokens = [
+        c.strip().strip("'\"").upper()
+        for c in str(case_numbers).replace("\n", ",").split(",")
+    ]
+    clean_cases = [c for c in raw_tokens if c]
+    seen = set()
+    clean_cases = [c for c in clean_cases if not (c in seen or seen.add(c))]
+
+    if not clean_cases:
+        return json.dumps({"error": "No valid case numbers provided."})
+
+    client = get_bq_client()
+
+    # Query 1: Fetch target case records in batch
+    target_sql = f"""
+    SELECT {AUDIT_DIRECT_SELECT}
+    FROM `{FULL_TABLE_REF}`
+    WHERE UPPER(TRIM(NUM_CASE)) IN UNNEST(@case_list)
+    LIMIT {MAX_ROW_LIMIT}
+    """
+    job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
+        query_parameters=[
+            bigquery.ArrayQueryParameter("case_list", "STRING", clean_cases)
+        ],
+    )
+    try:
+        query_job = client.query(target_sql, job_config=job_config)
+        target_rows = _sanitize_rows(query_job, max_rows=MAX_ROW_LIMIT)
+
+        if not target_rows:
+            return json.dumps({
+                "status": "NOT_FOUND",
+                "searched_cases": clean_cases,
+                "found_count": 0,
+                "message": f"None of the specified case numbers ({', '.join(clean_cases)}) were found in Medicaid application records.",
+            })
+
+        # Collect identifiers for sibling collision search
+        found_case_numbers = [r["NUM_CASE"] for r in target_rows if r.get("NUM_CASE")]
+        usernames = list({r["USERNAME"].lower().strip() for r in target_rows if r.get("USERNAME")})
+        streets = list({r["ADR_STREET_1"].lower().strip() for r in target_rows if r.get("ADR_STREET_1")})
+
+        sibling_rows = []
+        if usernames or streets:
+            sibling_sql = f"""
+            SELECT {AUDIT_DIRECT_SELECT}
+            FROM `{FULL_TABLE_REF}`
+            WHERE UPPER(TRIM(NUM_CASE)) NOT IN UNNEST(@case_list)
+              AND (
+                (@has_users AND LOWER(TRIM(USERNAME)) IN UNNEST(@usernames))
+                OR (@has_streets AND LOWER(TRIM(ADR_STREET_1)) IN UNNEST(@streets))
+              )
+            LIMIT 50
+            """
+            sibling_config = bigquery.QueryJobConfig(
+                maximum_bytes_billed=MAX_BYTES_BILLED,
+                query_parameters=[
+                    bigquery.ArrayQueryParameter("case_list", "STRING", found_case_numbers),
+                    bigquery.ScalarQueryParameter("has_users", "BOOL", bool(usernames)),
+                    bigquery.ArrayQueryParameter("usernames", "STRING", usernames if usernames else [""]),
+                    bigquery.ScalarQueryParameter("has_streets", "BOOL", bool(streets)),
+                    bigquery.ArrayQueryParameter("streets", "STRING", streets if streets else [""]),
+                ],
+            )
+            sibling_job = client.query(sibling_sql, job_config=sibling_config)
+            sibling_rows = _sanitize_rows(sibling_job, max_rows=50)
+
+        # Build per-case verification summaries
+        case_verifications = []
+        for case in target_rows:
+            c_num = case.get("NUM_CASE")
+            c_user = (case.get("USERNAME") or "").lower().strip()
+            c_street = (case.get("ADR_STREET_1") or "").lower().strip()
+            c_pwd = case.get("PASSWORD")
+
+            # Shared usernames across sibling rows or other target rows
+            matching_user_cases = {
+                r["NUM_CASE"]
+                for r in (sibling_rows + target_rows)
+                if r.get("NUM_CASE") != c_num
+                and c_user
+                and (r.get("USERNAME") or "").lower().strip() == c_user
+            }
+            # Shared addresses across sibling rows or other target rows
+            matching_addr_cases = {
+                r["NUM_CASE"]
+                for r in (sibling_rows + target_rows)
+                if r.get("NUM_CASE") != c_num
+                and c_street
+                and (r.get("ADR_STREET_1") or "").lower().strip() == c_street
+            }
+            # Shared passwords across sibling rows or other target rows
+            matching_pwd_cases = {
+                r["NUM_CASE"]
+                for r in (sibling_rows + target_rows)
+                if r.get("NUM_CASE") != c_num
+                and c_pwd
+                and r.get("PASSWORD") == c_pwd
+            }
+
+            case_verifications.append({
+                "case_number": c_num,
+                "applicant_name": f"{case.get('NAM_FIRST', '')} {case.get('NAM_LAST', '')}".strip(),
+                "case_record": case,
+                "collision_metrics": {
+                    "shared_username_count": len(matching_user_cases),
+                    "shared_username_cases": sorted(matching_user_cases),
+                    "shared_address_count": len(matching_addr_cases),
+                    "shared_address_cases": sorted(matching_addr_cases),
+                    "shared_password_count": len(matching_pwd_cases),
+                    "shared_password_cases": sorted(matching_pwd_cases),
+                },
+            })
+
+        not_found_cases = [c for c in clean_cases if c not in found_case_numbers]
+
+        verification_report = {
+            "status": "VERIFIED",
+            "total_requested": len(clean_cases),
+            "total_found": len(target_rows),
+            "verified_cases": case_verifications,
+            "not_found_cases": not_found_cases,
+        }
+        return json.dumps(verification_report)
+
+    except Exception:
+        logger.error("Error executing case verification for cases %s", clean_cases)
+        return json.dumps(
+            {"error": f"An error occurred while verifying cases: {', '.join(clean_cases)}."}
+        )
+
+
 def verify_case_record(case_number: str) -> str:
     """Verifies a single Medicaid application case record and analyzes cross-case collision stats.
 
@@ -379,99 +529,8 @@ def verify_case_record(case_number: str) -> str:
 
     Args:
         case_number: The specific NUM_CASE identifier to verify.
-
-    Returns:
-        JSON string containing the case record, related cases sharing credentials or address,
-        and collision counts for verification.
     """
-    if not case_number or not str(case_number).strip():
-        return json.dumps({"error": "case_number is required for verification."})
-
-    clean_case = str(case_number).strip()
-    client = get_bq_client()
-
-    # Query 1: Fetch target case record
-    target_sql = f"""
-    SELECT {AUDIT_DIRECT_SELECT}
-    FROM `{FULL_TABLE_REF}`
-    WHERE TRIM(NUM_CASE) = @case_number
-    LIMIT 1
-    """
-    job_config = bigquery.QueryJobConfig(
-        maximum_bytes_billed=MAX_BYTES_BILLED,
-        query_parameters=[
-            bigquery.ScalarQueryParameter("case_number", "STRING", clean_case)
-        ],
-    )
-    try:
-        query_job = client.query(target_sql, job_config=job_config)
-        target_rows = _sanitize_rows(query_job, max_rows=1)
-        if not target_rows:
-            return json.dumps({
-                "status": "NOT_FOUND",
-                "message": f"Case {clean_case} not found in Medicaid application records.",
-            })
-
-        target_case = target_rows[0]
-        username = target_case.get("USERNAME")
-        raw_street = target_case.get("ADR_STREET_1")
-
-        # Query 2: Find sibling collision cases (sharing address or username)
-        sibling_sql = f"""
-        SELECT {AUDIT_DIRECT_SELECT}
-        FROM `{FULL_TABLE_REF}`
-        WHERE TRIM(NUM_CASE) != @case_number
-          AND (
-            (@username IS NOT NULL AND LOWER(TRIM(USERNAME)) = LOWER(TRIM(@username)))
-            OR (@street IS NOT NULL AND LOWER(TRIM(ADR_STREET_1)) = LOWER(TRIM(@street)))
-          )
-        LIMIT 20
-        """
-        sibling_config = bigquery.QueryJobConfig(
-            maximum_bytes_billed=MAX_BYTES_BILLED,
-            query_parameters=[
-                bigquery.ScalarQueryParameter("case_number", "STRING", clean_case),
-                bigquery.ScalarQueryParameter("username", "STRING", username),
-                bigquery.ScalarQueryParameter("street", "STRING", raw_street),
-            ],
-        )
-        sibling_job = client.query(sibling_sql, job_config=sibling_config)
-        sibling_rows = _sanitize_rows(sibling_job, max_rows=20)
-
-        # Compute collision summary stats
-        same_user_cases = {
-            r["NUM_CASE"]
-            for r in sibling_rows
-            if username
-            and r.get("USERNAME")
-            and r.get("USERNAME", "").lower().strip() == username.lower().strip()
-        }
-        same_addr_cases = {
-            r["NUM_CASE"]
-            for r in sibling_rows
-            if raw_street
-            and r.get("ADR_STREET_1")
-            and r.get("ADR_STREET_1", "").lower().strip() == raw_street.lower().strip()
-        }
-
-        verification_report = {
-            "status": "VERIFIED",
-            "case_record": target_case,
-            "collision_metrics": {
-                "shared_username_cases_count": len(same_user_cases),
-                "shared_username_case_numbers": list(same_user_cases),
-                "shared_address_cases_count": len(same_addr_cases),
-                "shared_address_case_numbers": list(same_addr_cases),
-            },
-            "related_records": sibling_rows,
-        }
-        return json.dumps(verification_report)
-
-    except Exception:
-        logger.error("Error executing case verification for case %s", clean_case)
-        return json.dumps(
-            {"error": f"An error occurred while verifying case {clean_case}."}
-        )
+    return verify_case_records(case_number)
 
 
 def audit_identity_mismatches(limit: int = 50, offset: int = 0) -> str:
@@ -493,7 +552,7 @@ def audit_identity_mismatches(limit: int = 50, offset: int = 0) -> str:
 
     sql = f"""
     WITH candidates AS (
-        SELECT 
+        SELECT
             {AUDIT_DIRECT_SELECT},
             LOWER(TRIM(NAM_FIRST)) AS norm_first,
             LOWER(TRIM(NAM_LAST)) AS norm_last,
@@ -507,7 +566,7 @@ def audit_identity_mismatches(limit: int = 50, offset: int = 0) -> str:
     )
     SELECT {AUDIT_DIRECT_SELECT}
     FROM candidates
-    WHERE 
+    WHERE
         -- Username does not contain first name, last name, or first+last initials
         STRPOS(norm_user, norm_first) = 0
         AND STRPOS(norm_user, norm_last) = 0
@@ -554,7 +613,7 @@ def audit_sequential_clusters(limit: int = 50, offset: int = 0) -> str:
 
     sql = f"""
     WITH parsed_users AS (
-        SELECT 
+        SELECT
             {AUDIT_DIRECT_SELECT},
             REGEXP_EXTRACT(LOWER(TRIM(USERNAME)), r'^([a-z_-]+)') AS user_prefix,
             SAFE_CAST(REGEXP_EXTRACT(LOWER(TRIM(USERNAME)), r'(\\d+)$') AS INT64) AS user_num
@@ -563,7 +622,7 @@ def audit_sequential_clusters(limit: int = 50, offset: int = 0) -> str:
           AND REGEXP_CONTAINS(LOWER(TRIM(USERNAME)), r'^[a-z_-]+\\d+$')
     ),
     sequential_check AS (
-        SELECT 
+        SELECT
             *,
             LAG(user_num) OVER (PARTITION BY user_prefix ORDER BY user_num) AS prev_num,
             LEAD(user_num) OVER (PARTITION BY user_prefix ORDER BY user_num) AS next_num
