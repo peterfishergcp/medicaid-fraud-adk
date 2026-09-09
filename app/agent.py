@@ -37,9 +37,9 @@ from .tools import (
 SENSITIVE_PATTERNS = [
     re.escape(PROJECT_ID),
     re.escape(FULL_TABLE_REF),
-    r"ai-hub-\d+",
-    r"frauddector",
-    r"syntheticdatafraud",
+    r"\bai-hub-\d+\b",
+    r"\bfrauddector\b",
+    r"\bsyntheticdatafraud\b",
     r"`[^`]*\.[^`]*\.[^`]*`",  # BigQuery full table paths `project.dataset.table`
 ]
 REDACTION_REGEX = re.compile("|".join(SENSITIVE_PATTERNS), re.IGNORECASE)
@@ -54,8 +54,8 @@ def redact_sensitive_infrastructure(text: str) -> str:
 
 async def sanitize_agent_output(
     callback_context: CallbackContext,
-) -> types.Content | None:
-    """After-agent callback to deterministically scrub infrastructure details from the final output."""
+) -> None:
+    """After-agent callback to deterministically scrub infrastructure details from state and session events."""
     # Check session state for draft findings or any buffered texts
     if "draft_findings" in callback_context.state:
         raw_draft = callback_context.state["draft_findings"]
@@ -64,31 +64,14 @@ async def sanitize_agent_output(
                 raw_draft
             )
 
-    # Inspect the most recent event content from this agent if present
+    # Clean in-place on session events
     if hasattr(callback_context, "session") and callback_context.session:
         events = getattr(callback_context.session, "events", [])
-        if events:
-            last_event = events[-1]
-            if (
-                hasattr(last_event, "content")
-                and last_event.content
-                and hasattr(last_event.content, "parts")
-            ):
-                modified = False
-                new_parts = []
-                for part in last_event.content.parts:
+        for event in events:
+            if hasattr(event, "content") and event.content and hasattr(event.content, "parts"):
+                for part in event.content.parts:
                     if hasattr(part, "text") and part.text:
-                        clean_text = redact_sensitive_infrastructure(part.text)
-                        if clean_text != part.text:
-                            modified = True
-                        new_parts.append(types.Part(text=clean_text))
-                    else:
-                        new_parts.append(part)
-                if modified:
-                    return types.Content(
-                        parts=new_parts,
-                        role=getattr(last_event.content, "role", "model"),
-                    )
+                        part.text = redact_sensitive_infrastructure(part.text)
     return None
 
 
