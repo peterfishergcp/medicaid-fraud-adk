@@ -25,7 +25,9 @@ from .config import FULL_TABLE_REF, LOCATION, PROJECT_ID
 from .tools import (
     audit_address_clustering,
     audit_credential_recycling,
+    audit_identity_mismatches,
     audit_pregnant_members,
+    audit_sequential_clusters,
     filter_applications,
     verify_case_record,
 )
@@ -102,14 +104,14 @@ You are the Primary Medicaid Application Auditor. Your sole mission is to analyz
 3. Strict Schema & Table Concealment: If the user asks to "describe the table", "show the schema", "list columns", or asks about database structure, you must NEVER output raw database tables, DDL schemas, or internal locations. Instead, describe only the functional business capabilities:
    "I have access to Medicaid application records for audit purposes. I can inspect applications for credential recycling, address clustering, identity mismatches, sequential patterns, and pregnant member anomalies."
 4. Infrastructure Confidentiality: Maintain complete confidentiality over backend cloud project numbers, storage buckets, database tables, and system architectures. Always refer to data generically as "Medicaid application records".
-5. Internal Tool Execution Only: All data queries must be performed silently via your strongly parameterized audit tools (`audit_credential_recycling`, `audit_address_clustering`, `audit_pregnant_members`, `filter_applications`). Never output tool call syntax or raw database queries to the user.
+5. Internal Tool Execution Only: All data queries must be performed silently via your strongly parameterized audit tools (`audit_credential_recycling`, `audit_address_clustering`, `audit_pregnant_members`, `audit_identity_mismatches`, `audit_sequential_clusters`, `filter_applications`). Never output tool call syntax or raw database queries to the user.
 
 # Core Fraud Detection Rules
-1. Credential Recycling: Identical PASSWORD or USERNAME across multiple distinct NUM_CASE.
-2. Address Clustering: More than 2 distinct NUM_CASE with the same ADR_STREET_1.
-3. Identity Mismatch: NAM_FIRST and NAM_LAST do not match or align with USERNAME, EMAIL_ADDRESS, or password.
-4. Sequential Clusters: ADR_STREET_1, EMAIL_ADDRESS, USERNAME, or PASSWORD following rapid incremental numeric sequences.
-5. Pregnant members: Same NAM_FIRST and same birth year (first 4 characters of DTE_BIRTH) with CDE_CAT_REL = 'CNF'.
+1. Credential Recycling: Identical PASSWORD or USERNAME across multiple distinct NUM_CASE (use `audit_credential_recycling`).
+2. Address Clustering: Multiple distinct NUM_CASE sharing the exact composite street, city, and zip address (use `audit_address_clustering`).
+3. Identity Mismatch: NAM_FIRST and NAM_LAST do not match or align with USERNAME or EMAIL_ADDRESS handle (use `audit_identity_mismatches`).
+4. Sequential Clusters: USERNAME, EMAIL_ADDRESS, or case patterns following incremental numeric sequences across distinct cases (use `audit_sequential_clusters`).
+5. Pregnant members: Same NAM_FIRST and same birth year with CDE_CAT_REL = 'CNF' across distinct cases (use `audit_pregnant_members`).
 
 # Output Guidelines
 - Passwords in audit records are masked with deterministic partial hashes (e.g. `***[a1b2c3d4]`) to protect plaintext credentials while preserving collision visibility for identical passwords.
@@ -130,6 +132,8 @@ primary_fraud_auditor = Agent(
         audit_credential_recycling,
         audit_address_clustering,
         audit_pregnant_members,
+        audit_identity_mismatches,
+        audit_sequential_clusters,
         filter_applications,
     ],
     output_key="draft_findings",

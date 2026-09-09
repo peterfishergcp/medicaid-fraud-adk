@@ -89,3 +89,29 @@ def test_verify_case_record_empty_input() -> None:
 
     res = json.loads(verify_case_record("   "))
     assert "error" in res
+
+
+def test_audit_tools_registered() -> None:
+    """Verifies that all 5 fraud detection tools and drill-down tools are imported and registered."""
+    from app.agent import primary_fraud_auditor, fraud_verification_judge
+    from app.tools import (
+        audit_credential_recycling,
+        audit_address_clustering,
+        audit_pregnant_members,
+        audit_identity_mismatches,
+        audit_sequential_clusters,
+        filter_applications,
+        verify_case_record,
+    )
+
+    registered_tools = primary_fraud_auditor.tools
+    assert audit_credential_recycling in registered_tools
+    assert audit_address_clustering in registered_tools
+    assert audit_pregnant_members in registered_tools
+    assert audit_identity_mismatches in registered_tools
+    assert audit_sequential_clusters in registered_tools
+    assert filter_applications in registered_tools
+
+    judge_tools = fraud_verification_judge.tools
+    assert verify_case_record in judge_tools
+    assert filter_applications in judge_tools

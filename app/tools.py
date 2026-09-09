@@ -182,12 +182,13 @@ def audit_credential_recycling(
 def audit_address_clustering(
     min_cases: int = 3, limit: int = 50, offset: int = 0
 ) -> str:
-    """Audits Medicaid applications to find address clustering (same ADR_STREET_1 across multiple distinct NUM_CASE).
+    """Audits Medicaid applications to find address clustering across multiple distinct NUM_CASE.
 
-    Normalizes whitespace and casing, and filters out empty or placeholder addresses.
+    Groups records by composite address keys (ADR_STREET_1, ADR_CITY, ADR_ZIP) with whitespace
+    and casing normalization to prevent false positives across different cities or zip codes.
 
     Args:
-        min_cases: Minimum number of distinct cases at the same address to flag (default: 3, min: 2).
+        min_cases: Minimum number of distinct cases at the same composite address to flag (default: 3, min: 2).
         limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
@@ -200,18 +201,24 @@ def audit_address_clustering(
     client = get_bq_client()
     sql = f"""
     WITH clustered_addrs AS (
-        SELECT LOWER(TRIM(ADR_STREET_1)) AS norm_addr
+        SELECT 
+            LOWER(TRIM(ADR_STREET_1)) AS norm_street,
+            LOWER(TRIM(COALESCE(ADR_CITY, ''))) AS norm_city,
+            TRIM(CAST(COALESCE(ADR_ZIP, '') AS STRING)) AS norm_zip
         FROM `{FULL_TABLE_REF}`
         WHERE ADR_STREET_1 IS NOT NULL
           AND TRIM(ADR_STREET_1) != ''
           AND LOWER(TRIM(ADR_STREET_1)) NOT IN ('n/a', 'na', 'none', 'null', 'unknown', 'homeless', 'po box')
-        GROUP BY norm_addr
+        GROUP BY norm_street, norm_city, norm_zip
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     )
     SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
-    WHERE LOWER(TRIM(t.ADR_STREET_1)) IN (SELECT norm_addr FROM clustered_addrs)
-    ORDER BY t.ADR_STREET_1
+    INNER JOIN clustered_addrs ca
+        ON LOWER(TRIM(t.ADR_STREET_1)) = ca.norm_street
+       AND LOWER(TRIM(COALESCE(t.ADR_CITY, ''))) = ca.norm_city
+       AND TRIM(CAST(COALESCE(t.ADR_ZIP, '') AS STRING)) = ca.norm_zip
+    ORDER BY t.ADR_STREET_1, t.ADR_CITY, t.NUM_CASE
     LIMIT @limit OFFSET @offset
     """
     job_config = bigquery.QueryJobConfig(
@@ -233,7 +240,10 @@ def audit_address_clustering(
 
 
 def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
-    """Audits Medicaid applications to find pregnant members (CDE_CAT_REL = 'CNF') sharing first names and birth years.
+    """Audits Medicaid applications to find pregnant members (CDE_CAT_REL = 'CNF') sharing first names and birth years across distinct cases.
+
+    Groups records by normalized first name, last name initial, and birth year with
+    COUNT(DISTINCT NUM_CASE) > 1 to avoid false flagging of renewals or multi-record histories for the same applicant.
 
     Args:
         limit: Maximum number of rows to return (default: 50, max: 100).
@@ -247,22 +257,26 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
     client = get_bq_client()
     sql = f"""
     WITH pregnant_clusters AS (
-        SELECT LOWER(TRIM(NAM_FIRST)) as norm_first, SUBSTR(CAST(DTE_BIRTH AS STRING), 1, 4) as birth_year
+        SELECT 
+            LOWER(TRIM(NAM_FIRST)) as norm_first,
+            SUBSTR(LOWER(TRIM(COALESCE(NAM_LAST, ''))), 1, 1) as last_init,
+            SUBSTR(CAST(DTE_BIRTH AS STRING), 1, 4) as birth_year
         FROM `{FULL_TABLE_REF}`
         WHERE CDE_CAT_REL = 'CNF'
           AND NAM_FIRST IS NOT NULL
           AND TRIM(NAM_FIRST) != ''
           AND DTE_BIRTH IS NOT NULL
-        GROUP BY norm_first, birth_year
-        HAVING COUNT(*) > 1
+        GROUP BY norm_first, last_init, birth_year
+        HAVING COUNT(DISTINCT NUM_CASE) > 1
     )
     SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
     INNER JOIN pregnant_clusters pc
         ON LOWER(TRIM(t.NAM_FIRST)) = pc.norm_first
+       AND SUBSTR(LOWER(TRIM(COALESCE(t.NAM_LAST, ''))), 1, 1) = pc.last_init
        AND SUBSTR(CAST(t.DTE_BIRTH AS STRING), 1, 4) = pc.birth_year
     WHERE t.CDE_CAT_REL = 'CNF'
-    ORDER BY t.NAM_FIRST, t.DTE_BIRTH
+    ORDER BY t.NAM_FIRST, t.DTE_BIRTH, t.NUM_CASE
     LIMIT @limit OFFSET @offset
     """
     job_config = bigquery.QueryJobConfig(
@@ -459,4 +473,131 @@ def verify_case_record(case_number: str) -> str:
         logger.error("Error executing case verification for case %s", clean_case)
         return json.dumps(
             {"error": f"An error occurred while verifying case {clean_case}."}
+        )
+
+
+def audit_identity_mismatches(limit: int = 50, offset: int = 0) -> str:
+    """Audits Medicaid applications for Rule 3 Identity Mismatch anomalies.
+
+    Detects synthetic identities or hijacked accounts where the applicant's name
+    (NAM_FIRST, NAM_LAST) completely diverges from their USERNAME and EMAIL_ADDRESS handle
+    (i.e. neither first name, last name, nor initials match the account username or email).
+
+    Args:
+        limit: Maximum number of rows to return (default: 50, max: 100).
+        offset: Row offset for pagination (default: 0).
+
+    Returns:
+        JSON string containing the flagged application records with identity mismatches.
+    """
+    safe_limit, safe_offset = _clamp_bounds(limit, offset)
+    client = get_bq_client()
+
+    sql = f"""
+    WITH candidates AS (
+        SELECT 
+            {AUDIT_DIRECT_SELECT},
+            LOWER(TRIM(NAM_FIRST)) AS norm_first,
+            LOWER(TRIM(NAM_LAST)) AS norm_last,
+            LOWER(TRIM(USERNAME)) AS norm_user,
+            LOWER(SPLIT(TRIM(EMAIL_ADDRESS), '@')[SAFE_OFFSET(0)]) AS email_prefix
+        FROM `{FULL_TABLE_REF}`
+        WHERE NAM_FIRST IS NOT NULL AND LENGTH(TRIM(NAM_FIRST)) >= 2
+          AND NAM_LAST IS NOT NULL AND LENGTH(TRIM(NAM_LAST)) >= 2
+          AND USERNAME IS NOT NULL AND LENGTH(TRIM(USERNAME)) >= 3
+          AND EMAIL_ADDRESS IS NOT NULL AND STRPOS(EMAIL_ADDRESS, '@') > 1
+    )
+    SELECT {AUDIT_DIRECT_SELECT}
+    FROM candidates
+    WHERE 
+        -- Username does not contain first name, last name, or first+last initials
+        STRPOS(norm_user, norm_first) = 0
+        AND STRPOS(norm_user, norm_last) = 0
+        AND STRPOS(norm_user, CONCAT(SUBSTR(norm_first, 1, 1), norm_last)) = 0
+        AND STRPOS(norm_user, CONCAT(norm_first, SUBSTR(norm_last, 1, 1))) = 0
+        -- Email prefix does not contain first name or last name
+        AND STRPOS(email_prefix, norm_first) = 0
+        AND STRPOS(email_prefix, norm_last) = 0
+    ORDER BY NUM_CASE
+    LIMIT @limit OFFSET @offset
+    """
+    job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
+        query_parameters=[
+            bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
+            bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
+        ],
+    )
+    try:
+        query_job = client.query(sql, job_config=job_config)
+        return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
+    except Exception:
+        logger.error("Error executing identity_mismatches audit")
+        return json.dumps(
+            {"error": "An error occurred while analyzing identity mismatches."}
+        )
+
+
+def audit_sequential_clusters(limit: int = 50, offset: int = 0) -> str:
+    """Audits Medicaid applications for Rule 4 Sequential Cluster anomalies.
+
+    Detects automated or bot-generated bursts where applications share base username prefixes
+    with consecutive/sequential numeric suffixes across distinct cases (e.g. user001, user002, user003).
+
+    Args:
+        limit: Maximum number of rows to return (default: 50, max: 100).
+        offset: Row offset for pagination (default: 0).
+
+    Returns:
+        JSON string containing the flagged application records part of sequential patterns.
+    """
+    safe_limit, safe_offset = _clamp_bounds(limit, offset)
+    client = get_bq_client()
+
+    sql = f"""
+    WITH parsed_users AS (
+        SELECT 
+            {AUDIT_DIRECT_SELECT},
+            REGEXP_EXTRACT(LOWER(TRIM(USERNAME)), r'^([a-z_-]+)') AS user_prefix,
+            SAFE_CAST(REGEXP_EXTRACT(LOWER(TRIM(USERNAME)), r'(\\d+)$') AS INT64) AS user_num
+        FROM `{FULL_TABLE_REF}`
+        WHERE USERNAME IS NOT NULL
+          AND REGEXP_CONTAINS(LOWER(TRIM(USERNAME)), r'^[a-z_-]+\\d+$')
+    ),
+    sequential_check AS (
+        SELECT 
+            *,
+            LAG(user_num) OVER (PARTITION BY user_prefix ORDER BY user_num) AS prev_num,
+            LEAD(user_num) OVER (PARTITION BY user_prefix ORDER BY user_num) AS next_num
+        FROM parsed_users
+        WHERE user_prefix IS NOT NULL AND user_num IS NOT NULL
+    ),
+    flagged_users AS (
+        SELECT DISTINCT user_prefix
+        FROM sequential_check
+        WHERE (user_num - prev_num = 1) OR (next_num - user_num = 1)
+    )
+    SELECT {AUDIT_SELECT_CLAUSE}
+    FROM `{FULL_TABLE_REF}` t
+    INNER JOIN sequential_check sc
+        ON t.NUM_CASE = sc.NUM_CASE
+    INNER JOIN flagged_users fu
+        ON sc.user_prefix = fu.user_prefix
+    ORDER BY sc.user_prefix, sc.user_num, t.NUM_CASE
+    LIMIT @limit OFFSET @offset
+    """
+    job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
+        query_parameters=[
+            bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
+            bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
+        ],
+    )
+    try:
+        query_job = client.query(sql, job_config=job_config)
+        return json.dumps(_sanitize_rows(query_job, max_rows=safe_limit))
+    except Exception:
+        logger.error("Error executing sequential_clusters audit")
+        return json.dumps(
+            {"error": "An error occurred while analyzing sequential clusters."}
         )
