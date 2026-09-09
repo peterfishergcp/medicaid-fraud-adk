@@ -303,11 +303,13 @@ def filter_applications(
     email: str | None = None,
     city: str | None = None,
     zip_code: str | None = None,
-    password: str | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> str:
     """Filters Medicaid application records using safe, strongly-parameterized criteria.
+
+    Requires at least one identifying filter parameter with valid characters to prevent
+    unrestricted database enumeration or full-table dumps.
 
     Args:
         case_number: Specific NUM_CASE identifier.
@@ -316,13 +318,29 @@ def filter_applications(
         email: Case applicant EMAIL_ADDRESS.
         city: Case applicant ADR_CITY.
         zip_code: Case applicant ADR_ZIP.
-        password: Plaintext password string to search for (results are masked in output).
         limit: Maximum number of rows to return (default: 50, max: 100).
         offset: Row offset for pagination (default: 0).
 
     Returns:
-        JSON string containing the queried records.
+        JSON string containing the queried records or a validation error message.
     """
+    clean_case = case_number.strip() if case_number else None
+    clean_first = first_name.strip() if first_name else None
+    clean_last = last_name.strip() if last_name else None
+    clean_email = email.strip() if email else None
+    clean_city = city.strip() if city else None
+    clean_zip = str(zip_code).strip() if zip_code else None
+
+    # Enforce mandatory filter check to prevent unrestricted table scans / enumeration
+    active_filters = [
+        f for f in (clean_case, clean_first, clean_last, clean_email, clean_city, clean_zip)
+        if f and len(f) >= 2
+    ]
+    if not active_filters:
+        return json.dumps({
+            "error": "At least one identifying filter parameter (case_number, first_name, last_name, email, city, or zip_code) with at least 2 characters must be provided."
+        })
+
     safe_limit, safe_offset = _clamp_bounds(limit, offset)
 
     client = get_bq_client()
@@ -335,29 +353,15 @@ def filter_applications(
       AND (@email IS NULL OR LOWER(TRIM(EMAIL_ADDRESS)) = LOWER(TRIM(@email)))
       AND (@city IS NULL OR LOWER(TRIM(ADR_CITY)) = LOWER(TRIM(@city)))
       AND (@zip_code IS NULL OR TRIM(CAST(ADR_ZIP AS STRING)) = TRIM(@zip_code))
-      AND (@password IS NULL OR TRIM(PASSWORD) = TRIM(@password))
     LIMIT @limit OFFSET @offset
     """
     params: list[bigquery.ScalarQueryParameter] = [
-        bigquery.ScalarQueryParameter(
-            "case_number", "STRING", case_number.strip() if case_number else None
-        ),
-        bigquery.ScalarQueryParameter(
-            "first_name", "STRING", first_name.strip() if first_name else None
-        ),
-        bigquery.ScalarQueryParameter(
-            "last_name", "STRING", last_name.strip() if last_name else None
-        ),
-        bigquery.ScalarQueryParameter(
-            "email", "STRING", email.strip() if email else None
-        ),
-        bigquery.ScalarQueryParameter("city", "STRING", city.strip() if city else None),
-        bigquery.ScalarQueryParameter(
-            "zip_code", "STRING", str(zip_code).strip() if zip_code else None
-        ),
-        bigquery.ScalarQueryParameter(
-            "password", "STRING", password.strip() if password else None
-        ),
+        bigquery.ScalarQueryParameter("case_number", "STRING", clean_case),
+        bigquery.ScalarQueryParameter("first_name", "STRING", clean_first),
+        bigquery.ScalarQueryParameter("last_name", "STRING", clean_last),
+        bigquery.ScalarQueryParameter("email", "STRING", clean_email),
+        bigquery.ScalarQueryParameter("city", "STRING", clean_city),
+        bigquery.ScalarQueryParameter("zip_code", "STRING", clean_zip),
         bigquery.ScalarQueryParameter("limit", "INT64", safe_limit),
         bigquery.ScalarQueryParameter("offset", "INT64", safe_offset),
     ]

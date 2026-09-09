@@ -115,3 +115,18 @@ def test_audit_tools_registered() -> None:
     judge_tools = fraud_verification_judge.tools
     assert verify_case_record in judge_tools
     assert filter_applications in judge_tools
+
+
+def test_filter_applications_mandatory_criteria() -> None:
+    """Verifies that filter_applications rejects empty/unrestricted queries to prevent data dumps."""
+    import json
+    from app.tools import filter_applications
+
+    # Test with no parameters
+    res = json.loads(filter_applications())
+    assert "error" in res
+    assert "At least one identifying filter parameter" in res["error"]
+
+    # Test with empty strings / short single character
+    res = json.loads(filter_applications(case_number=" ", first_name="a"))
+    assert "error" in res
