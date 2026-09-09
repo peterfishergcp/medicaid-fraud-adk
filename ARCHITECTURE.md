@@ -61,7 +61,7 @@ flowchart TD
 ---
 
 ### B. Stage 1: `primary_fraud_auditor` (`Agent`)
-- **Model**: `gemini-3.7-flash` (or `gemini-2.5-flash`)
+- **Model**: `gemini-3.8-flash`
 - **Output Key**: `draft_findings`
 - **Role**: Pattern Detection & Data Extraction
 - **Responsibilities**:
@@ -79,7 +79,7 @@ flowchart TD
 ---
 
 ### C. Stage 2: `fraud_verification_judge` (`Agent`)
-- **Model**: `gemini-3.7-flash`
+- **Model**: `gemini-3.8-flash`
 - **Input Context**: `{draft_findings}`
 - **Role**: Senior Fraud Investigator & Compliance Quality Assurance
 - **Responsibilities**:
@@ -152,8 +152,8 @@ To comply with enterprise security and data loss prevention (DLP) standards:
 | Component Name | Type | Model / Tech | Main Responsibility |
 | :--- | :--- | :--- | :--- |
 | `medicaid_fraud_pipeline` | `SequentialAgent` | Google ADK | Deterministic pipeline orchestration across detection and verification stages. |
-| `primary_fraud_auditor` | `Agent` | `gemini-3.7-flash` | Executes BigQuery audit tools and compiles initial candidate match tables. |
-| `fraud_verification_judge` | `Agent` | `gemini-3.7-flash` | Performs cross-case verification, eliminates false positives, and assigns risk scores. |
+| `primary_fraud_auditor` | `Agent` | `gemini-3.8-flash` | Executes BigQuery audit tools and compiles initial candidate match tables. |
+| `fraud_verification_judge` | `Agent` | `gemini-3.8-flash` | Performs cross-case verification, eliminates false positives, and assigns risk scores. |
 | `audit_credential_recycling` | Tool | BigQuery SQL | Identifies recycled usernames and passwords across distinct case numbers. |
 | `audit_address_clustering` | Tool | BigQuery SQL | Identifies high-density physical address clusters across distinct case numbers. |
 | `audit_identity_mismatches` | Tool | BigQuery SQL | Flags mismatches between applicant first names and username/email handles. |
