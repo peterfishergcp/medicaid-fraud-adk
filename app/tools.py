@@ -202,23 +202,19 @@ def audit_address_clustering(
     sql = f"""
     WITH clustered_addrs AS (
         SELECT 
-            LOWER(TRIM(ADR_STREET_1)) AS norm_street,
-            LOWER(TRIM(COALESCE(ADR_CITY, ''))) AS norm_city,
-            TRIM(COALESCE(CAST(ADR_ZIP AS STRING), '')) AS norm_zip
+            LOWER(TRIM(ADR_STREET_1)) AS norm_street
         FROM `{FULL_TABLE_REF}`
         WHERE ADR_STREET_1 IS NOT NULL
           AND TRIM(ADR_STREET_1) != ''
           AND LOWER(TRIM(ADR_STREET_1)) NOT IN ('n/a', 'na', 'none', 'null', 'unknown', 'homeless', 'po box')
-        GROUP BY norm_street, norm_city, norm_zip
+        GROUP BY norm_street
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     )
     SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
     INNER JOIN clustered_addrs ca
         ON LOWER(TRIM(t.ADR_STREET_1)) = ca.norm_street
-       AND LOWER(TRIM(COALESCE(t.ADR_CITY, ''))) = ca.norm_city
-       AND TRIM(COALESCE(CAST(t.ADR_ZIP AS STRING), '')) = ca.norm_zip
-    ORDER BY t.ADR_STREET_1, t.ADR_CITY, t.NUM_CASE
+    ORDER BY t.ADR_STREET_1, t.NUM_CASE
     LIMIT @limit OFFSET @offset
     """
     job_config = bigquery.QueryJobConfig(
