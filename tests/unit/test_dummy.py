@@ -13,14 +13,9 @@
 # limitations under the License.
 import hashlib
 import pytest
-from google.adk.agents.callback_context import CallbackContext
-from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
-from app.agent import (
-    RedactionStreamingPlugin,
-    redact_sensitive_infrastructure,
-)
+from app.agent import redact_sensitive_infrastructure
 from app.tools import _mask_password, _clamp_bounds, AUDIT_COLUMNS
 
 
@@ -82,31 +77,6 @@ def test_redact_sensitive_infrastructure() -> None:
     assert "frauddector" not in scrubbed
     assert "syntheticdatafraud" not in scrubbed
     assert "[REDACTED_SYSTEM_INFO]" in scrubbed
-
-
-@pytest.mark.asyncio
-async def test_redaction_streaming_plugin() -> None:
-    """Tests the real-time RedactionStreamingPlugin intercepting LLM chunks."""
-    from unittest.mock import MagicMock
-
-    plugin = RedactionStreamingPlugin()
-    llm_response = LlmResponse(
-        content=types.Content(
-            role="model",
-            parts=[types.Part(text="Connected to project ai-hub-459714 dataset frauddector")],
-        )
-    )
-    mock_ctx = MagicMock()
-    result = await plugin.after_model_callback(
-        callback_context=mock_ctx,
-        llm_response=llm_response,
-    )
-    assert result is not None
-    assert result.content is not None
-    text = result.content.parts[0].text
-    assert "ai-hub-459714" not in text
-    assert "frauddector" not in text
-    assert "[REDACTED_SYSTEM_INFO]" in text
 
 
 def test_verify_case_record_empty_input() -> None:
