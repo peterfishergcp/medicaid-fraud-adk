@@ -259,21 +259,19 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
     WITH pregnant_clusters AS (
         SELECT 
             LOWER(TRIM(NAM_FIRST)) as norm_first,
-            SUBSTR(LOWER(TRIM(COALESCE(NAM_LAST, ''))), 1, 1) as last_init,
             SUBSTR(CAST(DTE_BIRTH AS STRING), 1, 4) as birth_year
         FROM `{FULL_TABLE_REF}`
         WHERE CDE_CAT_REL = 'CNF'
           AND NAM_FIRST IS NOT NULL
           AND TRIM(NAM_FIRST) != ''
           AND DTE_BIRTH IS NOT NULL
-        GROUP BY norm_first, last_init, birth_year
+        GROUP BY norm_first, birth_year
         HAVING COUNT(DISTINCT NUM_CASE) > 1
     )
     SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
     INNER JOIN pregnant_clusters pc
         ON LOWER(TRIM(t.NAM_FIRST)) = pc.norm_first
-       AND SUBSTR(LOWER(TRIM(COALESCE(t.NAM_LAST, ''))), 1, 1) = pc.last_init
        AND SUBSTR(CAST(t.DTE_BIRTH AS STRING), 1, 4) = pc.birth_year
     WHERE t.CDE_CAT_REL = 'CNF'
     ORDER BY t.NAM_FIRST, t.DTE_BIRTH, t.NUM_CASE
