@@ -18,7 +18,7 @@
 Registers the latest Vertex AI Reasoning Engine runtime ID into Gemini Enterprise.
 Supports prepending version tags to the beginning of the display name
 (e.g., 'v2 - Medicaid Application Auditor') and preserving existing agent
-registrations to maintain version history.
+registrations so multiple versions can coexist side-by-side.
 """
 
 import argparse
@@ -135,33 +135,56 @@ def register_agent_runtime(
     reasoning_engine_uri: str,
     app_uri: str,
     display_name: str,
+    headers: dict[str, str],
 ) -> None:
-    """Registers Reasoning Engine runtime into Gemini Enterprise using agents-cli."""
+    """Registers a versioned agent into Gemini Enterprise via Discovery Engine REST API.
+
+    Directly posts a new agent definition matching on display_name. This prevents
+    agents-cli from performing an in-place rename of previous versions sharing the same
+    underlying Reasoning Engine.
+    """
     app_id = app_uri.split("/")[-1]
-    logger.info("Registering Reasoning Engine into %s as '%s'...", app_id, display_name)
-    uv_path = shutil.which("uv") or "uv"
-    cmd = [
-        uv_path,
-        "run",
-        "agents-cli",
-        "publish",
-        "gemini-enterprise",
-        "--agent-runtime-id",
-        reasoning_engine_uri,
-        "--gemini-enterprise-app-id",
-        app_uri,
-        "--display-name",
-        display_name,
-        "--description",
-        DESCRIPTION,
-        "--registration-type",
-        "adk",
-    ]
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode == 0:
-        logger.info("Successfully registered agent in %s!", app_id)
+    list_url = f"https://discoveryengine.googleapis.com/v1alpha/{app_uri}/assistants/default_assistant/agents"
+
+    existing_agent_res_name = None
+    try:
+        list_resp = requests.get(list_url, headers=headers)
+        if list_resp.status_code == 200:
+            for a in list_resp.json().get("agents", []):
+                if a.get("displayName") == display_name:
+                    existing_agent_res_name = a.get("name")
+                    break
+    except Exception as e:
+        logger.warning("Error checking existing agents in %s: %s", app_id, e)
+
+    payload = {
+        "displayName": display_name,
+        "description": DESCRIPTION,
+        "icon": {
+            "uri": "https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/smart_toy/default/24px.svg"
+        },
+        "adkAgentDefinition": {
+            "toolSettings": {"toolDescription": DESCRIPTION},
+            "provisionedReasoningEngine": {"reasoningEngine": reasoning_engine_uri},
+        },
+    }
+
+    if existing_agent_res_name:
+        logger.info("Updating existing registration for '%s' in %s...", display_name, app_id)
+        resp = requests.patch(
+            f"https://discoveryengine.googleapis.com/v1alpha/{existing_agent_res_name}",
+            headers=headers,
+            json=payload,
+        )
     else:
-        logger.error("Failed to register agent in %s:\n%s\n%s", app_id, res.stderr, res.stdout)
+        logger.info("Creating new versioned registration for '%s' in %s...", display_name, app_id)
+        resp = requests.post(list_url, headers=headers, json=payload)
+
+    if resp.status_code == 200:
+        agent_id = resp.json().get("name", "").split("/")[-1]
+        logger.info("Successfully registered '%s' in %s! (Agent ID: %s)", display_name, app_id, agent_id)
+    else:
+        logger.error("Failed to register agent in %s: %s %s", app_id, resp.status_code, resp.text)
 
 
 def publish_agent(
@@ -188,7 +211,7 @@ def publish_agent(
         )
     else:
         logger.info(
-            "Preserving existing agent registrations in %s (creating new versioned agent: '%s')...",
+            "Preserving existing agent registrations in %s (registering version: '%s')...",
             app_id,
             display_name,
         )
@@ -202,7 +225,7 @@ def publish_agent(
         )
         return
 
-    register_agent_runtime(reasoning_engine_uri, app_uri, display_name)
+    register_agent_runtime(reasoning_engine_uri, app_uri, display_name, headers)
 
 
 def main() -> None:
