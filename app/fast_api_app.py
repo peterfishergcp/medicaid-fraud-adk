@@ -23,6 +23,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.adk.cli.fast_api import get_fast_api_app
 from google.cloud import logging as google_cloud_logging
 
+from app.app_utils.reasoning_engine_adapter import (
+    attach_reasoning_engine_routes,
+)
 from app.app_utils.telemetry import setup_telemetry
 from app.app_utils.typing import Feedback
 
@@ -53,6 +56,9 @@ app: FastAPI = get_fast_api_app(
 )
 app.title = "medicaid-fraud-adk"
 app.description = "API for interacting with the Agent medicaid-fraud-adk"
+
+# Attach Reasoning Engine endpoints for Vertex AI Agent Engine and Gemini Enterprise
+attach_reasoning_engine_routes(app)
 
 # Simple token/auth verification for secure internal endpoint access
 BEARER_AUTH = HTTPBearer(auto_error=False)
