@@ -19,6 +19,8 @@ from google.adk.agents import Agent, SequentialAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.models import Gemini
+from google.adk.models.llm_response import LlmResponse
+from google.adk.plugins.base_plugin import BasePlugin
 from google.genai import types
 
 from .config import FULL_TABLE_REF, LOCATION, PROJECT_ID
@@ -27,6 +29,7 @@ from .tools import (
     audit_credential_recycling,
     audit_pregnant_members,
     filter_applications,
+    verify_case_record,
 )
 
 # --- Output Sanitization / Redaction Post-Processor ---
@@ -47,6 +50,42 @@ def redact_sensitive_infrastructure(text: str) -> str:
     if not text or not isinstance(text, str):
         return text
     return REDACTION_REGEX.sub("[REDACTED_SYSTEM_INFO]", text)
+
+
+class RedactionStreamingPlugin(BasePlugin):
+    """Real-time streaming and token interceptor plugin that scrubs infrastructure details from SSE chunks."""
+
+    def __init__(self) -> None:
+        super().__init__(name="redaction_streaming_plugin")
+
+    async def after_model_callback(
+        self,
+        *,
+        callback_context: CallbackContext,
+        llm_response: LlmResponse,
+    ) -> LlmResponse | None:
+        """Intercepts model responses (including real-time streaming chunks) and redacts sensitive tokens."""
+        if not llm_response or not llm_response.content:
+            return None
+
+        if hasattr(llm_response.content, "parts") and llm_response.content.parts:
+            modified = False
+            sanitized_parts = []
+            for part in llm_response.content.parts:
+                if hasattr(part, "text") and part.text:
+                    cleaned_text = redact_sensitive_infrastructure(part.text)
+                    if cleaned_text != part.text:
+                        modified = True
+                    sanitized_parts.append(types.Part(text=cleaned_text))
+                else:
+                    sanitized_parts.append(part)
+            if modified:
+                llm_response.content = types.Content(
+                    parts=sanitized_parts,
+                    role=getattr(llm_response.content, "role", "model"),
+                )
+                return llm_response
+        return None
 
 
 async def sanitize_agent_output(
@@ -138,7 +177,9 @@ primary_fraud_auditor = Agent(
 # --- Stage 2: Fraud Verification & Double-Check Judge Agent ---
 JUDGE_INSTRUCTION = """
 # Role & Mission
-You are the Senior Medicaid Fraud Verification Auditor & Compliance Judge. Your job is to double-check and audit the draft findings provided by the Primary Auditor ({draft_findings}) to ensure 100% precision, zero missed records, and clear risk classification.
+You are the Senior Medicaid Fraud Verification Auditor & Compliance Judge. Your dual mission is to:
+1. Verify & Spot-Check: Audit the draft candidate findings provided by the Primary Auditor ({draft_findings}) against the 5 core fraud rules. Use your read-only tools (`verify_case_record`, `filter_applications`) to spot-check individual cases, check sibling collision counts, and verify household links.
+2. Standardized Formatting & Risk Classification: Deduplicate confirmed violations, assign appropriate Risk Severity levels, and format the output into a standardized, compliance-ready Markdown audit table.
 
 # Strict Output Security Guardrails
 1. Absolute SQL & DDL Ban: Never include, quote, or display SQL statements, DDL scripts (`CREATE TABLE`), CTAS queries, or database modification commands in your final answer.
@@ -172,6 +213,7 @@ fraud_verification_judge = Agent(
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=JUDGE_INSTRUCTION,
+    tools=[verify_case_record, filter_applications],
     after_agent_callback=sanitize_agent_output,
 )
 
@@ -187,4 +229,5 @@ root_agent = medicaid_fraud_pipeline
 app = App(
     root_agent=root_agent,
     name="app",
+    plugins=[RedactionStreamingPlugin()],
 )

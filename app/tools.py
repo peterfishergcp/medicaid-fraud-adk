@@ -85,6 +85,30 @@ def _sanitize_rows(
     return results
 
 
+# Explicit list of audit columns projected to minimize BigQuery bytes scanned, memory overhead, and token cost
+AUDIT_COLUMNS = [
+    "NUM_CASE",
+    "ID_MEDICAID",
+    "USERNAME",
+    "PASSWORD",
+    "EMAIL_ADDRESS",
+    "PHONE_NUMBER",
+    "DTE_LAST_LOGON",
+    "NAM_FIRST",
+    "NAM_LAST",
+    "DTE_BIRTH",
+    "CDE_SEX",
+    "ADR_STREET_1",
+    "ADR_STREET_2",
+    "ADR_CITY",
+    "ADR_ZIP",
+    "CDE_CAT_REL",
+]
+
+AUDIT_SELECT_CLAUSE = ", ".join(f"t.{col}" for col in AUDIT_COLUMNS)
+AUDIT_DIRECT_SELECT = ", ".join(AUDIT_COLUMNS)
+
+
 def _clamp_bounds(limit: int, offset: int) -> tuple[int, int]:
     """Clamps user/LLM supplied limit and offset within safe system bounds."""
     safe_limit = min(max(1, limit), MAX_ROW_LIMIT)
@@ -130,7 +154,7 @@ def audit_credential_recycling(
         GROUP BY norm_password
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     )
-    SELECT t.*
+    SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
     WHERE LOWER(TRIM(t.USERNAME)) IN (SELECT norm_username FROM recycled_users)
        OR TRIM(t.PASSWORD) IN (SELECT norm_password FROM recycled_passwords)
@@ -184,7 +208,7 @@ def audit_address_clustering(
         GROUP BY norm_addr
         HAVING COUNT(DISTINCT NUM_CASE) >= @min_cases
     )
-    SELECT t.*
+    SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
     WHERE LOWER(TRIM(t.ADR_STREET_1)) IN (SELECT norm_addr FROM clustered_addrs)
     ORDER BY t.ADR_STREET_1
@@ -232,7 +256,7 @@ def audit_pregnant_members(limit: int = 50, offset: int = 0) -> str:
         GROUP BY norm_first, birth_year
         HAVING COUNT(*) > 1
     )
-    SELECT t.*
+    SELECT {AUDIT_SELECT_CLAUSE}
     FROM `{FULL_TABLE_REF}` t
     INNER JOIN pregnant_clusters pc
         ON LOWER(TRIM(t.NAM_FIRST)) = pc.norm_first
@@ -289,7 +313,7 @@ def filter_applications(
 
     client = get_bq_client()
     sql = f"""
-    SELECT *
+    SELECT {AUDIT_DIRECT_SELECT}
     FROM `{FULL_TABLE_REF}`
     WHERE (@case_number IS NULL OR TRIM(NUM_CASE) = TRIM(@case_number))
       AND (@first_name IS NULL OR LOWER(TRIM(NAM_FIRST)) = LOWER(TRIM(@first_name)))
@@ -333,3 +357,106 @@ def filter_applications(
     except Exception:
         logger.error("Error executing application filter")
         return json.dumps({"error": "An error occurred while querying applications."})
+
+
+def verify_case_record(case_number: str) -> str:
+    """Verifies a single Medicaid application case record and analyzes cross-case collision stats.
+
+    Used by the Verification Judge to spot-check draft findings, inspect related records,
+    and compute exact counts of other distinct cases sharing the same address, username, or password.
+
+    Args:
+        case_number: The specific NUM_CASE identifier to verify.
+
+    Returns:
+        JSON string containing the case record, related cases sharing credentials or address,
+        and collision counts for verification.
+    """
+    if not case_number or not str(case_number).strip():
+        return json.dumps({"error": "case_number is required for verification."})
+
+    clean_case = str(case_number).strip()
+    client = get_bq_client()
+
+    # Query 1: Fetch target case record
+    target_sql = f"""
+    SELECT {AUDIT_DIRECT_SELECT}
+    FROM `{FULL_TABLE_REF}`
+    WHERE TRIM(NUM_CASE) = @case_number
+    LIMIT 1
+    """
+    job_config = bigquery.QueryJobConfig(
+        maximum_bytes_billed=MAX_BYTES_BILLED,
+        query_parameters=[
+            bigquery.ScalarQueryParameter("case_number", "STRING", clean_case)
+        ],
+    )
+    try:
+        query_job = client.query(target_sql, job_config=job_config)
+        target_rows = _sanitize_rows(query_job, max_rows=1)
+        if not target_rows:
+            return json.dumps({
+                "status": "NOT_FOUND",
+                "message": f"Case {clean_case} not found in Medicaid application records.",
+            })
+
+        target_case = target_rows[0]
+        username = target_case.get("USERNAME")
+        raw_street = target_case.get("ADR_STREET_1")
+
+        # Query 2: Find sibling collision cases (sharing address or username)
+        sibling_sql = f"""
+        SELECT {AUDIT_DIRECT_SELECT}
+        FROM `{FULL_TABLE_REF}`
+        WHERE TRIM(NUM_CASE) != @case_number
+          AND (
+            (@username IS NOT NULL AND LOWER(TRIM(USERNAME)) = LOWER(TRIM(@username)))
+            OR (@street IS NOT NULL AND LOWER(TRIM(ADR_STREET_1)) = LOWER(TRIM(@street)))
+          )
+        LIMIT 20
+        """
+        sibling_config = bigquery.QueryJobConfig(
+            maximum_bytes_billed=MAX_BYTES_BILLED,
+            query_parameters=[
+                bigquery.ScalarQueryParameter("case_number", "STRING", clean_case),
+                bigquery.ScalarQueryParameter("username", "STRING", username),
+                bigquery.ScalarQueryParameter("street", "STRING", raw_street),
+            ],
+        )
+        sibling_job = client.query(sibling_sql, job_config=sibling_config)
+        sibling_rows = _sanitize_rows(sibling_job, max_rows=20)
+
+        # Compute collision summary stats
+        same_user_cases = {
+            r["NUM_CASE"]
+            for r in sibling_rows
+            if username
+            and r.get("USERNAME")
+            and r.get("USERNAME", "").lower().strip() == username.lower().strip()
+        }
+        same_addr_cases = {
+            r["NUM_CASE"]
+            for r in sibling_rows
+            if raw_street
+            and r.get("ADR_STREET_1")
+            and r.get("ADR_STREET_1", "").lower().strip() == raw_street.lower().strip()
+        }
+
+        verification_report = {
+            "status": "VERIFIED",
+            "case_record": target_case,
+            "collision_metrics": {
+                "shared_username_cases_count": len(same_user_cases),
+                "shared_username_case_numbers": list(same_user_cases),
+                "shared_address_cases_count": len(same_addr_cases),
+                "shared_address_case_numbers": list(same_addr_cases),
+            },
+            "related_records": sibling_rows,
+        }
+        return json.dumps(verification_report)
+
+    except Exception:
+        logger.error("Error executing case verification for case %s", clean_case)
+        return json.dumps(
+            {"error": f"An error occurred while verifying case {clean_case}."}
+        )
