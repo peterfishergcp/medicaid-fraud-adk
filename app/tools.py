@@ -204,7 +204,7 @@ def audit_address_clustering(
         SELECT 
             LOWER(TRIM(ADR_STREET_1)) AS norm_street,
             LOWER(TRIM(COALESCE(ADR_CITY, ''))) AS norm_city,
-            TRIM(CAST(COALESCE(ADR_ZIP, '') AS STRING)) AS norm_zip
+            TRIM(COALESCE(CAST(ADR_ZIP AS STRING), '')) AS norm_zip
         FROM `{FULL_TABLE_REF}`
         WHERE ADR_STREET_1 IS NOT NULL
           AND TRIM(ADR_STREET_1) != ''
@@ -217,7 +217,7 @@ def audit_address_clustering(
     INNER JOIN clustered_addrs ca
         ON LOWER(TRIM(t.ADR_STREET_1)) = ca.norm_street
        AND LOWER(TRIM(COALESCE(t.ADR_CITY, ''))) = ca.norm_city
-       AND TRIM(CAST(COALESCE(t.ADR_ZIP, '') AS STRING)) = ca.norm_zip
+       AND TRIM(COALESCE(CAST(t.ADR_ZIP AS STRING), '')) = ca.norm_zip
     ORDER BY t.ADR_STREET_1, t.ADR_CITY, t.NUM_CASE
     LIMIT @limit OFFSET @offset
     """
