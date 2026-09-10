@@ -12,11 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import hashlib
-import pytest
-from google.genai import types
+import json
 
-from app.agent import redact_sensitive_infrastructure
-from app.tools import _mask_password, _clamp_bounds, AUDIT_COLUMNS
+from app.agent import (
+    fraud_verification_judge,
+    primary_fraud_auditor,
+    redact_sensitive_infrastructure,
+)
+from app.tools import (
+    AUDIT_COLUMNS,
+    _clamp_bounds,
+    _mask_password,
+    audit_address_clustering,
+    audit_credential_recycling,
+    audit_identity_mismatches,
+    audit_pregnant_members,
+    audit_sequential_clusters,
+    filter_applications,
+    verify_case_record,
+    verify_case_records,
+)
+from scripts.publish_ge import BASE_DISPLAY_NAME, format_versioned_display_name
 
 
 def test_mask_password() -> None:
@@ -71,7 +87,9 @@ def test_audit_columns_completeness() -> None:
 
 def test_redact_sensitive_infrastructure() -> None:
     """Tests infrastructure scrubbing for project IDs, tables, and datasets."""
-    sample_text = "Querying table `ai-hub-459714.frauddector.syntheticdatafraud` for results."
+    sample_text = (
+        "Querying table `ai-hub-459714.frauddector.syntheticdatafraud` for results."
+    )
     scrubbed = redact_sensitive_infrastructure(sample_text)
     assert "ai-hub-459714" not in scrubbed
     assert "frauddector" not in scrubbed
@@ -81,29 +99,21 @@ def test_redact_sensitive_infrastructure() -> None:
 
 def test_verify_case_record_empty_input() -> None:
     """Tests verify_case_record error response on empty/whitespace input."""
-    import json
-    from app.tools import verify_case_record
-
     res = json.loads(verify_case_record(""))
     assert "error" in res
 
     res = json.loads(verify_case_record("   "))
     assert "error" in res
 
+    res_batch = json.loads(verify_case_records(""))
+    assert "error" in res_batch
+
+    res_batch = json.loads(verify_case_records("   ,  ,, "))
+    assert "error" in res_batch
+
 
 def test_audit_tools_registered() -> None:
-    """Verifies that all 5 fraud detection tools and drill-down tools are imported and registered."""
-    from app.agent import primary_fraud_auditor, fraud_verification_judge
-    from app.tools import (
-        audit_credential_recycling,
-        audit_address_clustering,
-        audit_pregnant_members,
-        audit_identity_mismatches,
-        audit_sequential_clusters,
-        filter_applications,
-        verify_case_record,
-    )
-
+    """Verifies all fraud tools and verification tools are registered."""
     registered_tools = primary_fraud_auditor.tools
     assert audit_credential_recycling in registered_tools
     assert audit_address_clustering in registered_tools
@@ -113,20 +123,34 @@ def test_audit_tools_registered() -> None:
     assert filter_applications in registered_tools
 
     judge_tools = fraud_verification_judge.tools
+    assert verify_case_records in judge_tools
     assert verify_case_record in judge_tools
     assert filter_applications in judge_tools
 
 
 def test_filter_applications_mandatory_criteria() -> None:
-    """Verifies that filter_applications rejects empty/unrestricted queries to prevent data dumps."""
-    import json
-    from app.tools import filter_applications
-
-    # Test with no parameters
+    """Verifies that filter_applications rejects empty/unrestricted queries."""
     res = json.loads(filter_applications())
     assert "error" in res
     assert "At least one identifying filter parameter" in res["error"]
 
-    # Test with empty strings / short single character
     res = json.loads(filter_applications(case_number=" ", first_name="a"))
     assert "error" in res
+
+
+def test_format_versioned_display_name() -> None:
+    """Verifies display name version formatting puts version at the beginning."""
+    v2_name = format_versioned_display_name(BASE_DISPLAY_NAME, "v2")
+    assert v2_name == "v2 - Medicaid Application Auditor"
+
+    bracket_name = format_versioned_display_name(BASE_DISPLAY_NAME, "[v2]")
+    assert bracket_name == "[v2] Medicaid Application Auditor"
+
+    v12_name = format_versioned_display_name(BASE_DISPLAY_NAME, "v1.2")
+    assert v12_name == "v1.2 - Medicaid Application Auditor"
+
+    empty_name = format_versioned_display_name(BASE_DISPLAY_NAME, "")
+    assert empty_name == "Medicaid Application Auditor"
+
+    whitespace_name = format_versioned_display_name(BASE_DISPLAY_NAME, "   ")
+    assert whitespace_name == "Medicaid Application Auditor"

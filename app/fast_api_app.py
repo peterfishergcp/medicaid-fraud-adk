@@ -30,7 +30,7 @@ from app.app_utils.telemetry import setup_telemetry
 from app.app_utils.typing import Feedback
 
 setup_telemetry()
-_, project_id = google.auth.default()
+google.auth.default()
 logging_client = google_cloud_logging.Client()
 logger = logging_client.logger(__name__)
 allow_origins = (
