@@ -27,8 +27,13 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
+from dotenv import load_dotenv
 import requests
+
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_DIR / ".env")
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -65,6 +70,30 @@ def get_gcp_access_token() -> str:
     except Exception as e:
         logger.error("Failed to get GCP access token: %s", e)
         sys.exit(1)
+
+
+def get_default_project_id() -> str:
+    """Resolves GCP Project ID from environment or active gcloud configuration."""
+    env_proj = (
+        os.environ.get("GOOGLE_CLOUD_PROJECT")
+        or os.environ.get("GCP_PROJECT")
+        or os.environ.get("GCLOUD_PROJECT")
+    )
+    if env_proj:
+        return env_proj.strip()
+
+    gcloud_path = shutil.which("gcloud") or "gcloud"
+    try:
+        proj = subprocess.check_output(
+            [gcloud_path, "config", "get-value", "project"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        if proj and proj != "(unset)":
+            return proj
+    except Exception:
+        pass
+    return ""
 
 
 def delete_agent_registration(
@@ -197,12 +226,14 @@ def publish_agent(
     force: bool = True,
 ) -> None:
     """Publishes agent runtime to Gemini Enterprise, preserving existing versions by default."""
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "ai-hub-459714")
+    project_id = get_default_project_id()
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
-        "X-Goog-User-Project": project_id,
     }
+    if project_id:
+        headers["X-Goog-User-Project"] = project_id
+
     app_id = app_uri.split("/")[-1]
 
     if replace:

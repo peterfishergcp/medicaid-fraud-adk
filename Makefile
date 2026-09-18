@@ -36,23 +36,30 @@ local-backend:
 # Backend Deployment Targets
 # ==============================================================================
 
-# Deploy the agent remotely
+# Deploy the agent remotely to Cloud Run
 # Usage: make deploy [IAP=true] [PORT=8080] - Set IAP=true to enable Identity-Aware Proxy, PORT to specify container port
 deploy:
-	PROJECT_ID=$$(gcloud config get-value project) && \
+	@if [ -f .env ]; then export $$(grep -v '^#' .env | xargs); fi; \
+	PROJECT_ID=$${GOOGLE_CLOUD_PROJECT:-$$(gcloud config get-value project)}; \
+	REGION=$${GOOGLE_CLOUD_LOCATION:-us-central1}; \
+	DATASET=$${BIGQUERY_DATASET:-frauddector}; \
+	TABLE=$${BIGQUERY_TABLE:-syntheticdatafraud}; \
 	gcloud beta run deploy medicaid-fraud-adk \
 		--source . \
 		--memory "4Gi" \
 		--project $$PROJECT_ID \
-		--region "us-east1" \
+		--region $$REGION \
 		--no-allow-unauthenticated \
 		--no-cpu-throttling \
 		--labels "created-by=adk" \
 		--update-build-env-vars "AGENT_VERSION=$(shell awk -F'"' '/^version = / {print $$2}' pyproject.toml || echo '0.0.0')" \
-		--update-env-vars \
-		"" \
+		--update-env-vars "GOOGLE_CLOUD_PROJECT=$$PROJECT_ID,GOOGLE_CLOUD_LOCATION=$$REGION,BIGQUERY_DATASET=$$DATASET,BIGQUERY_TABLE=$$TABLE,GOOGLE_GENAI_USE_VERTEXAI=True" \
 		$(if $(IAP),--iap) \
 		$(if $(PORT),--port=$(PORT))
+
+# Deploy to Vertex AI Agent Engine and publish to Gemini Enterprise
+deploy-ge:
+	uv run python scripts/deploy_and_publish.py
 
 # Alias for 'make deploy' for backward compatibility
 backend: deploy

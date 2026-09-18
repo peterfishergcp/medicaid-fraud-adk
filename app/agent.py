@@ -21,7 +21,7 @@ from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from .config import FULL_TABLE_REF, LOCATION, PROJECT_ID
+from .config import DATASET_ID, FULL_TABLE_REF, LOCATION, PROJECT_ID, TABLE_ID
 from .tools import (
     audit_address_clustering,
     audit_credential_recycling,
@@ -38,6 +38,8 @@ from .tools import (
 SENSITIVE_PATTERNS = [
     re.escape(PROJECT_ID),
     re.escape(FULL_TABLE_REF),
+    re.escape(DATASET_ID),
+    re.escape(TABLE_ID),
     r"\bai-hub-\d+\b",
     r"\bfrauddector\b",
     r"\bsyntheticdatafraud\b",
