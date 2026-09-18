@@ -227,6 +227,8 @@ def publish_agent(
 ) -> None:
     """Publishes agent runtime to Gemini Enterprise, preserving existing versions by default."""
     project_id = get_default_project_id()
+    if not app_uri.startswith("projects/") and project_id:
+        app_uri = f"projects/{project_id}/locations/global/collections/default_collection/engines/{app_uri.strip()}"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",

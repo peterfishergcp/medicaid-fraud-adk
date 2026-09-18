@@ -62,15 +62,47 @@ def get_default_project_id() -> str:
     return ""
 
 
-def get_default_target_apps() -> list[str]:
+def normalize_app_uri(app_str: str, project_id: str) -> str:
+    """Normalizes a bare Gemini Enterprise Engine ID into a full Discovery Engine resource URI."""
+    app_str = app_str.strip()
+    if app_str.startswith("projects/"):
+        return app_str
+    return f"projects/{project_id}/locations/global/collections/default_collection/engines/{app_str}"
+
+
+def get_default_target_apps(project_id: str) -> list[str]:
     """Resolves target Gemini Enterprise App URIs from GEMINI_ENTERPRISE_APPS env var."""
     apps_env = os.environ.get("GEMINI_ENTERPRISE_APPS", "")
-    return [app.strip() for app in apps_env.split(",") if app.strip()]
+    return [
+        normalize_app_uri(app, project_id)
+        for app in apps_env.split(",")
+        if app.strip()
+    ]
 
 
-def run_deployment(project_id: str, region: str, service_name: str) -> str:
+def run_deployment(
+    project_id: str,
+    region: str,
+    service_name: str,
+    dataset: str,
+    table: str,
+) -> str:
     logger.info("=== STEP 1: Deploying to Vertex AI Agent Engine ===")
-    logger.info("Target Project: %s | Region: %s", project_id, region)
+    logger.info(
+        "Target Project: %s | Region: %s | BigQuery Table: %s.%s.%s",
+        project_id,
+        region,
+        project_id,
+        dataset,
+        table,
+    )
+    env_vars_str = (
+        f"GOOGLE_CLOUD_PROJECT={project_id},"
+        f"GOOGLE_CLOUD_LOCATION={region},"
+        f"BIGQUERY_DATASET={dataset},"
+        f"BIGQUERY_TABLE={table},"
+        f"GOOGLE_GENAI_USE_VERTEXAI=True"
+    )
     deploy_cmd = [
         "uv",
         "run",
@@ -84,6 +116,8 @@ def run_deployment(project_id: str, region: str, service_name: str) -> str:
         region,
         "--service-name",
         service_name,
+        "--update-env-vars",
+        env_vars_str,
         "--no-confirm-project",
     ]
     logger.info("Executing: %s", " ".join(deploy_cmd))
@@ -142,18 +176,29 @@ def run_publishing(
 
 
 def main() -> None:
+    default_project = get_default_project_id()
     parser = argparse.ArgumentParser(
         description="Deploy ADK Agent to Vertex AI Agent Engine and publish to Gemini Enterprise."
     )
     parser.add_argument(
         "--project",
-        default=get_default_project_id(),
+        default=default_project,
         help="GCP Project ID (defaults to GOOGLE_CLOUD_PROJECT in .env or gcloud config)",
     )
     parser.add_argument(
         "--region",
         default=os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1"),
         help="GCP Region for Vertex AI Agent Engine (default: us-central1)",
+    )
+    parser.add_argument(
+        "--dataset",
+        default=os.environ.get("BIGQUERY_DATASET", "frauddector"),
+        help="BigQuery Dataset name (defaults to BIGQUERY_DATASET in .env)",
+    )
+    parser.add_argument(
+        "--table",
+        default=os.environ.get("BIGQUERY_TABLE", "syntheticdatafraud"),
+        help="BigQuery Table name (defaults to BIGQUERY_TABLE in .env)",
     )
     parser.add_argument(
         "--service-name",
@@ -163,8 +208,8 @@ def main() -> None:
     parser.add_argument(
         "--apps",
         nargs="*",
-        default=get_default_target_apps(),
-        help="Target Gemini Enterprise App URIs (defaults to GEMINI_ENTERPRISE_APPS in .env)",
+        default=None,
+        help="Target Gemini Enterprise App URIs or Engine IDs (defaults to GEMINI_ENTERPRISE_APPS in .env)",
     )
     parser.add_argument(
         "--version",
@@ -190,26 +235,36 @@ def main() -> None:
         )
         sys.exit(1)
 
-    runtime_id = run_deployment(args.project, args.region, args.service_name)
+    runtime_id = run_deployment(
+        args.project, args.region, args.service_name, args.dataset, args.table
+    )
 
     if args.skip_publish:
         logger.info("Skipping Gemini Enterprise publishing (--skip-publish set).")
         return
 
-    target_apps = args.apps
+    if args.apps is not None:
+        target_apps = [normalize_app_uri(a, args.project) for a in args.apps if a.strip()]
+    else:
+        target_apps = get_default_target_apps(args.project)
+
     if not target_apps and sys.stdin.isatty():
         logger.info("No GEMINI_ENTERPRISE_APPS configured in .env or --apps flag.")
         user_input = input(
-            "Enter target Gemini Enterprise App URI (or press Enter to skip publishing): "
+            "Enter target Gemini Enterprise App URI or Engine ID (or press Enter to skip publishing): "
         ).strip()
         if user_input:
-            target_apps = [app.strip() for app in user_input.split(",") if app.strip()]
+            target_apps = [
+                normalize_app_uri(app, args.project)
+                for app in user_input.split(",")
+                if app.strip()
+            ]
 
     if not target_apps:
         logger.warning(
             "No Gemini Enterprise App URIs provided. Skipping Step 2 (Publishing).\n"
             "To publish later, run:\n"
-            "  uv run python scripts/publish_ge.py --runtime-id %s --apps <YOUR_GE_APP_URI>",
+            "  uv run python scripts/publish_ge.py --runtime-id %s --apps <YOUR_GE_APP_URI_OR_ID>",
             runtime_id,
         )
         return
