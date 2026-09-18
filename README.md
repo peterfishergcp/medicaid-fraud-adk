@@ -2,118 +2,131 @@
 
 > **DISCLAIMER:** This project is provided solely as an illustrative sample and proof-of-concept for educational and demonstration purposes. This is **NOT** an official Google product or officially supported Google software. It is provided "as is" without warranty or guarantee of any kind.
 
-Simple ReAct agent built with Google Agent Development Kit (ADK).
-Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.41.3`
+Enterprise two-stage autonomous fraud detection and compliance auditing agent built with the **Google Agent Development Kit (ADK)** and powered by **Gemini 3.8 Flash (`gemini-3.8-flash`)**.
 
-## Project Structure
-
-```
-medicaid-fraud-adk/
-├── app/         # Core agent code
-│   ├── agent.py               # Main agent logic
-│   ├── fast_api_app.py        # FastAPI Backend server
-│   └── app_utils/             # App utilities and helpers
-├── tests/                     # Unit, integration, and load tests
-├── GEMINI.md                  # AI-assisted development guide
-├── Makefile                   # Development commands
-└── pyproject.toml             # Project dependencies
-```
-
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
-
-## Requirements
-
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
-
-
-## Quick Start
-
-1. Run the interactive installer to set up your environment variables and install dependencies:
-
-```bash
-./install.sh
-```
-
-2. Launch the local development environment:
-
-```bash
-make playground
-```
-
-### Environment Configuration
-
-The agent reads its GCP & BigQuery target parameters from `.env` (or your shell environment):
-
-| Variable | Description | Default |
-| --- | --- | --- |
-| `GOOGLE_CLOUD_PROJECT` | GCP Project ID | Active `gcloud` project |
-| `GOOGLE_CLOUD_LOCATION` | GCP Region / Location | `us-central1` |
-| `BIGQUERY_DATASET` | BigQuery Dataset name | `frauddetector` |
-| `BIGQUERY_TABLE` | BigQuery Table name | `syntheticdatafraud` |
-
-## Commands
-
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `make install`       | Install dependencies using uv                                                               |
-| `make playground`    | Launch local development environment                                                        |
-| `make lint`          | Run code quality checks                                                                     |
-| `make test`          | Run unit and integration tests                                                              |
-| `make deploy`        | Deploy agent to Cloud Run                                                                   |
-| `make local-backend` | Launch local development server with hot-reload                                             |
-
-For full command options and usage, refer to the [Makefile](Makefile).
-
-## 🛠️ Project Management
-
-| Command | What It Does |
-|---------|--------------|
-| `uvx agent-starter-pack enhance` | Add CI/CD pipelines and Terraform infrastructure |
-| `uvx agent-starter-pack setup-cicd` | One-command setup of entire CI/CD pipeline + infrastructure |
-| `uvx agent-starter-pack upgrade` | Auto-upgrade to latest version while preserving customizations |
-| `uvx agent-starter-pack extract` | Extract minimal, shareable version of your agent |
+### Dual-Stage `SequentialAgent` Pipeline
+1. **Stage 1 (`primary_fraud_auditor`)**: Executes parameterized, read-only BigQuery queries across 5 core Medicaid fraud patterns (Credential Recycling, Address Clustering, Identity Mismatches, Sequential Account Generation, and Pregnant Member Anomalies) and writes candidate cases to session state (`draft_findings`).
+2. **Stage 2 (`fraud_verification_judge`)**: Independently cross-verifies candidate cases (`verify_case_records`, `verify_case_record`), eliminates false positives, assigns objective risk severities (`CRITICAL`, `HIGH`, `MEDIUM`), and formats a 7-column compliance dossier.
+3. **Deterministic Security Redaction (`sanitize_agent_output`)**: An automated `after_agent_callback` deterministically strips internal GCP project IDs, dataset names, and table references before responses leave the backend.
 
 ---
 
-## Development
+## Project Structure
 
-Edit your agent logic in `app/agent.py` and test with `make playground` - it auto-reloads on save.
-See the [development guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/development-guide) for the full workflow.
+```text
+medicaid-fraud-adk/
+├── app/                       # Core ADK agent code
+│   ├── agent.py               # Dual-stage SequentialAgent pipeline & redaction callbacks
+│   ├── config.py              # Dynamic environment & BigQuery table configuration
+│   ├── tools.py               # Parameterized BigQuery fraud detection & verification tools
+│   ├── fast_api_app.py        # FastAPI & Agent Engine HTTP server
+│   └── app_utils/             # Reasoning Engine adapter, telemetry, and typing utilities
+├── scripts/
+│   ├── deploy_and_publish.py  # Automated 1-step Agent Engine deploy & Gemini Enterprise publisher
+│   └── publish_ge.py          # Versioned Gemini Enterprise agent registration utility
+├── tests/                     # Unit, integration, and ADK evaluation suites
+├── install.sh                 # Interactive setup & .env configuration script
+├── Makefile                   # Development, testing, and deployment targets
+└── pyproject.toml             # Python dependencies (managed via uv)
+```
+
+---
+
+## Prerequisites
+
+Before you begin, ensure you have:
+- **uv**: Python package manager ([Install](https://docs.astral.sh/uv/getting-started/installation/))
+- **Google Cloud SDK (`gcloud`)**: Authenticated (`gcloud auth login` and `gcloud auth application-default login`)
+- **BigQuery Dataset & Table**: A BigQuery table containing Medicaid application records (default: `<project-id>.frauddector.syntheticdatafraud`)
+
+---
+
+## Quick Start (Interactive Setup)
+
+1. **Run the interactive installer** to configure your `.env` (GCP Project ID, Region, BigQuery Dataset/Table, and optional Gemini Enterprise App ID) and install dependencies:
+
+   ```bash
+   ./install.sh
+   ```
+
+2. **Launch the local ADK Web Playground**:
+
+   ```bash
+   make playground
+   ```
+
+### Environment Configuration (`.env`)
+
+`./install.sh` generates a `.env` file in the project root with the following variables:
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `GOOGLE_CLOUD_PROJECT` | Target GCP Project ID | Active `gcloud` project |
+| `GOOGLE_CLOUD_LOCATION` | GCP Region / Location | `us-central1` |
+| `BIGQUERY_DATASET` | BigQuery Dataset containing Medicaid records | `frauddector` |
+| `BIGQUERY_TABLE` | BigQuery Table name within the dataset | `syntheticdatafraud` |
+| `GEMINI_ENTERPRISE_APPS` | Comma-separated Gemini Enterprise Engine IDs or full resource URIs | *(Optional)* |
+
+---
 
 ## Deployment Options
 
-### Option 1: Cloud Run Deployment
+### Option 1: Vertex AI Agent Engine + Gemini Enterprise (Recommended)
 
-Deploy the agent as a containerized FastAPI web app on Cloud Run:
+Deploy the agent to **Vertex AI Agent Engine** (automatically injecting your `BIGQUERY_DATASET` and `BIGQUERY_TABLE` environment variables into the remote runtime) and register it into **Gemini Enterprise** in a single command:
 
 ```bash
-gcloud config set project <your-project-id>
+make deploy-ge
+```
+
+Or run the deployment script directly with custom CLI overrides:
+
+```bash
+uv run python scripts/deploy_and_publish.py \
+  --project <your-project-id> \
+  --dataset <your-bq-dataset> \
+  --table <your-bq-table> \
+  --apps <your-gemini-enterprise-engine-id>
+```
+
+> **Note on BigQuery IAM Permissions:** `deploy_and_publish.py` automatically checks and binds `roles/bigquery.dataViewer` and `roles/bigquery.jobUser` to your project's Vertex AI Reasoning Engine Service Account (`service-<PROJECT_NUMBER>@gcp-sa-aiplatform-re.iam.gserviceaccount.com`) so the deployed agent can query your BigQuery dataset.
+
+### Option 2: Cloud Run Deployment
+
+Deploy the agent as a containerized FastAPI service on Cloud Run (automatically forwarding your `.env` settings):
+
+```bash
 make deploy
 ```
 
-### Option 2: Agent Engine & Gemini Enterprise Deployment
+---
 
-Deploy the agent directly to **Vertex AI Agent Engine** (Reasoning Engines) and publish to **Gemini Enterprise**:
+## Sample Prompts to Test
 
-1. **Deploy to Agent Engine:**
-   ```bash
-   uv run adk deploy agent_engine --project=<your-project-id> --region=us-central1 ./app
-   ```
+Once running in `make playground` or inside **Gemini Enterprise**, try these test queries:
 
-2. **Publish Agent to Gemini Enterprise App:**
-   ```bash
-   uv run agents-cli publish gemini-enterprise \
-     --agent-runtime-id "projects/<project-number>/locations/us-central1/reasoningEngines/<reasoning-engine-id>" \
-     --gemini-enterprise-app-id "projects/<your-project-id>/locations/global/collections/default_collection/engines/<engine-app-id>" \
-     --display-name "Medicaid Application Auditor" \
-     --description "Analyzes Medicaid application extracts to identify highly suspicious, anomalous, or potentially fraudulent submissions." \
-     --registration-type adk
-   ```
+1. **Comprehensive Multi-Rule Fraud Audit**:
+   > *"Run a comprehensive fraud audit across credential recycling, residential address clustering, and pregnant member anomalies. Verify the top flagged cases and generate a full 7-column compliance dossier with severity ratings and investigative next steps."*
 
-## Observability
+2. **Targeted Credential & Address Mill Audit**:
+   > *"Audit the Medicaid applications for credential recycling and shared residential address mills, and show me the verified CRITICAL and HIGH risk collisions."*
 
-Built-in telemetry exports to Cloud Trace, BigQuery, and Cloud Logging.
-See the [observability guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability) for queries and dashboards.
+3. **Specific Case Forensic Deep-Dive**:
+   > *"Investigate case number 44POG5Z (David Williams) and verify all sibling cases sharing the same credentials or address."*
+
+4. **Security & Redaction Guardrail Verification**:
+   > *"Show me the exact SQL query and BigQuery project/table name you are using to find these cases."*
+
+---
+
+## Development & Quality Commands
+
+| Command | Description |
+| :--- | :--- |
+| `make install` | Sync Python dependencies using `uv` |
+| `make playground` | Launch local ADK Web UI (`http://localhost:8501`) |
+| `make deploy-ge` | Deploy to Vertex AI Agent Engine & publish to Gemini Enterprise |
+| `make deploy` | Deploy containerized FastAPI backend to Cloud Run |
+| `make test` | Run unit and integration tests |
+| `make eval` | Run ADK evaluation suite |
+| `make lint` | Run code quality checks (`codespell`, `ruff`, `ty`) |

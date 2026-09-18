@@ -136,7 +136,49 @@ def run_deployment(
         sys.exit(1)
 
     logger.info("Agent Engine deployment successful! Runtime ID: %s", runtime_id)
+    ensure_reasoning_engine_bigquery_iam(project_id)
     return runtime_id
+
+
+def ensure_reasoning_engine_bigquery_iam(project_id: str) -> None:
+    """Ensures the Vertex AI Reasoning Engine Service Account has BigQuery read & job permissions."""
+    gcloud_path = shutil.which("gcloud") or "gcloud"
+    try:
+        project_number = subprocess.check_output(
+            [
+                gcloud_path,
+                "projects",
+                "describe",
+                project_id,
+                "--format=value(projectNumber)",
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        if not project_number:
+            return
+        re_sa = f"serviceAccount:service-{project_number}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
+        logger.info(
+            "Ensuring BigQuery IAM roles (bigquery.dataViewer, bigquery.jobUser) for %s...",
+            re_sa,
+        )
+        for role in ("roles/bigquery.dataViewer", "roles/bigquery.jobUser"):
+            subprocess.run(
+                [
+                    gcloud_path,
+                    "projects",
+                    "add-iam-policy-binding",
+                    project_id,
+                    f"--member={re_sa}",
+                    f"--role={role}",
+                    "--condition=None",
+                    "--quiet",
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+    except Exception as e:
+        logger.debug("Could not auto-bind BigQuery IAM roles: %s", e)
 
 
 def run_publishing(
