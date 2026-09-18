@@ -96,13 +96,7 @@ def run_deployment(
         dataset,
         table,
     )
-    env_vars_str = (
-        f"GOOGLE_CLOUD_PROJECT={project_id},"
-        f"GOOGLE_CLOUD_LOCATION={region},"
-        f"BIGQUERY_DATASET={dataset},"
-        f"BIGQUERY_TABLE={table},"
-        f"GOOGLE_GENAI_USE_VERTEXAI=True"
-    )
+    env_vars_str = f"BIGQUERY_DATASET={dataset},BIGQUERY_TABLE={table}"
     deploy_cmd = [
         "uv",
         "run",
