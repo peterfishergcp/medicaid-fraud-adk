@@ -114,7 +114,7 @@ make deploy
 ## Telemetry, Cloud Trace & Observability Setup (Cloud Shell & UI)
 
 ### 1. Cloud Shell One-Command Fix (Strict IAM Customer Environments)
-Run the included helper script in **Google Cloud Shell** to enable the required observability APIs (`telemetry.googleapis.com`, `cloudtrace.googleapis.com`, `logging.googleapis.com`, `monitoring.googleapis.com`) and grant least-privilege IAM roles to the Reasoning Engine and Cloud Run service accounts:
+Run the included helper script in **Google Cloud Shell** to enable the required observability APIs (`telemetry.googleapis.com`, `cloudtrace.googleapis.com`, `logging.googleapis.com`, `monitoring.googleapis.com`) and grant least-privilege IAM roles to the Vertex AI Reasoning Engine Service Account (`service-<PROJECT_NUMBER>@gcp-sa-aiplatform-re.iam.gserviceaccount.com`):
 
 ```bash
 # Default metadata-only tracing (redacts prompt/response text for HIPAA/PII safety):

@@ -22,7 +22,7 @@
 #   - roles/serviceusage.serviceUsageAdmin
 #
 # Usage:
-#   ./scripts/enable_telemetry_cloudshell.sh [--project PROJECT_ID] [--region us-central1] [--log-prompts] [--update-cloud-run]
+#   ./scripts/enable_telemetry_cloudshell.sh [--project PROJECT_ID] [--region us-central1] [--log-prompts]
 # ==============================================================================
 
 set -e
@@ -35,8 +35,6 @@ fi
 PROJECT_ID="${GOOGLE_CLOUD_PROJECT:-$(gcloud config get-value project 2>/dev/null || echo '')}"
 REGION="${GOOGLE_CLOUD_REGION:-us-central1}"
 CAPTURE_MODE="${OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT:-NO_CONTENT}"
-ADK_CAPTURE_SPANS="false"
-UPDATE_CLOUD_RUN="false"
 CUSTOM_SA=""
 
 while [[ $# -gt 0 ]]; do
@@ -55,27 +53,21 @@ while [[ $# -gt 0 ]]; do
       ;;
     --log-prompts)
       CAPTURE_MODE="SPAN_AND_EVENT"
-      ADK_CAPTURE_SPANS="true"
       shift 1
       ;;
     --service-account)
       CUSTOM_SA="$2"
       shift 2
       ;;
-    --update-cloud-run)
-      UPDATE_CLOUD_RUN="true"
-      shift 1
-      ;;
     -h|--help)
       echo "Usage: ./scripts/enable_telemetry_cloudshell.sh [OPTIONS]"
       echo ""
       echo "Options:"
       echo "  --project PROJECT_ID         Target GCP Project ID"
-      echo "  --region REGION              Deployment region (default: us-central1)"
+      echo "  --region REGION              Vertex AI Agent Engine region (default: us-central1)"
       echo "  --capture-mode MODE          NO_CONTENT (default), EVENT_ONLY, SPAN_ONLY, or SPAN_AND_EVENT"
       echo "  --log-prompts                Enable full prompt/response logging (sets SPAN_AND_EVENT)"
       echo "  --service-account SA_EMAIL   Optional custom service account email to grant roles to"
-      echo "  --update-cloud-run           Update existing Cloud Run service 'medicaid-fraud-adk' env vars"
       exit 0
       ;;
     *)
@@ -127,9 +119,8 @@ gcloud beta services identity create \
   --quiet >/dev/null 2>&1 || true
 
 RE_SA="service-${PROJECT_NUMBER}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
-COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
-SERVICE_ACCOUNTS=("$RE_SA" "$COMPUTE_SA")
+SERVICE_ACCOUNTS=("$RE_SA")
 if [ -n "$CUSTOM_SA" ]; then
   SERVICE_ACCOUNTS+=("$CUSTOM_SA")
 fi
@@ -170,17 +161,6 @@ if [ -f .env ]; then
   grep -q "^GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=" .env && sed -i "s|^GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=.*|GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true|" .env || echo "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true" >> .env
   grep -q "^OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=" .env && sed -i "s|^OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=.*|OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=$CAPTURE_MODE|" .env || echo "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=$CAPTURE_MODE" >> .env
   echo "   ✅ Updated .env"
-fi
-
-if [ "$UPDATE_CLOUD_RUN" = "true" ]; then
-  echo ""
-  echo "5️⃣  Updating Cloud Run service 'medicaid-fraud-adk' in $REGION..."
-  gcloud run services update medicaid-fraud-adk \
-    --project="$PROJECT_ID" \
-    --region="$REGION" \
-    --update-env-vars="GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_REGION=${REGION},GOOGLE_CLOUD_LOCATION=global,GEMINI_MODEL_LOCATION=global,GOOGLE_GENAI_USE_VERTEXAI=True,GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true,OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=${CAPTURE_MODE},ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=${ADK_CAPTURE_SPANS}" \
-    --quiet
-  echo "   ✅ Cloud Run service updated."
 fi
 
 echo ""
