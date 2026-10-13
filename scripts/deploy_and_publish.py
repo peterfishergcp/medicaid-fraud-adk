@@ -89,14 +89,26 @@ def run_deployment(
 ) -> str:
     logger.info("=== STEP 1: Deploying to Vertex AI Agent Engine ===")
     logger.info(
-        "Target Project: %s | Region: %s | BigQuery Table: %s.%s.%s",
+        "Target Project: %s | Region: %s | Gemini Endpoint: global | BigQuery Table: %s.%s.%s",
         project_id,
         region,
         project_id,
         dataset,
         table,
     )
-    env_vars_str = f"BIGQUERY_DATASET={dataset},BIGQUERY_TABLE={table}"
+    capture_mode = os.environ.get(
+        "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "NO_CONTENT"
+    )
+    env_vars_str = (
+        f"BIGQUERY_DATASET={dataset},"
+        f"BIGQUERY_TABLE={table},"
+        f"GOOGLE_CLOUD_REGION={region},"
+        "GOOGLE_CLOUD_LOCATION=global,"
+        "GEMINI_MODEL_LOCATION=global,"
+        "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true,"
+        f"OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT={capture_mode},"
+        "ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS=false"
+    )
     deploy_cmd = [
         "uv",
         "run",
@@ -141,7 +153,7 @@ def run_deployment(
 
 
 def ensure_reasoning_engine_bigquery_iam(project_id: str) -> None:
-    """Ensures the Vertex AI Reasoning Engine Service Account has BigQuery read & job permissions."""
+    """Ensures the Vertex AI Reasoning Engine Service Account has BigQuery & Telemetry IAM permissions."""
     gcloud_path = shutil.which("gcloud") or "gcloud"
     try:
         project_number = subprocess.check_output(
@@ -158,12 +170,22 @@ def ensure_reasoning_engine_bigquery_iam(project_id: str) -> None:
         if not project_number:
             return
         re_sa = f"serviceAccount:service-{project_number}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
+        required_roles = (
+            "roles/bigquery.dataViewer",
+            "roles/bigquery.jobUser",
+            "roles/cloudtrace.agent",
+            "roles/telemetry.tracesWriter",
+            "roles/logging.logWriter",
+            "roles/monitoring.metricWriter",
+        )
         logger.info(
-            "Ensuring BigQuery IAM roles (bigquery.dataViewer, bigquery.jobUser) for %s...",
+            "Ensuring BigQuery & Telemetry IAM roles (%s) for %s...",
+            ", ".join(required_roles),
             re_sa,
         )
-        for role in ("roles/bigquery.dataViewer", "roles/bigquery.jobUser"):
-            subprocess.run(
+        failed_roles = []
+        for role in required_roles:
+            res = subprocess.run(
                 [
                     gcloud_path,
                     "projects",
@@ -177,8 +199,17 @@ def ensure_reasoning_engine_bigquery_iam(project_id: str) -> None:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
+            if res.returncode != 0:
+                failed_roles.append(role)
+        if failed_roles:
+            logger.warning(
+                "Could not auto-bind some IAM roles (%s) due to strict project permissions. "
+                "Please have a Project IAM Admin run './scripts/enable_telemetry_cloudshell.sh --project %s' in Cloud Shell.",
+                ", ".join(failed_roles),
+                project_id,
+            )
     except Exception as e:
-        logger.debug("Could not auto-bind BigQuery IAM roles: %s", e)
+        logger.debug("Could not auto-bind BigQuery/Telemetry IAM roles: %s", e)
 
 
 def run_publishing(
@@ -213,6 +244,11 @@ def run_publishing(
 
 def main() -> None:
     default_project = get_default_project_id()
+    raw_loc = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+    default_region = os.environ.get(
+        "GOOGLE_CLOUD_REGION",
+        raw_loc if raw_loc != "global" else "us-central1",
+    )
     parser = argparse.ArgumentParser(
         description="Deploy ADK Agent to Vertex AI Agent Engine and publish to Gemini Enterprise."
     )
@@ -223,7 +259,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--region",
-        default=os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1"),
+        default=default_region,
         help="GCP Region for Vertex AI Agent Engine (default: us-central1)",
     )
     parser.add_argument(

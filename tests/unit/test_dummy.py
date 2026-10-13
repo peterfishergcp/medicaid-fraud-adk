@@ -13,12 +13,17 @@
 # limitations under the License.
 import hashlib
 import json
+import os
 
 from app.agent import (
+    GlobalGemini,
     fraud_verification_judge,
     primary_fraud_auditor,
     redact_sensitive_infrastructure,
 )
+from app.app_utils.reasoning_engine_adapter import _no_op_instrumentor_builder
+from app.app_utils.telemetry import setup_telemetry
+from app.config import LOCATION
 from app.tools import (
     AUDIT_COLUMNS,
     _clamp_bounds,
@@ -154,3 +159,23 @@ def test_format_versioned_display_name() -> None:
 
     whitespace_name = format_versioned_display_name(BASE_DISPLAY_NAME, "   ")
     assert whitespace_name == "Medicaid Application Auditor"
+
+
+def test_global_gemini_model_location_pinning() -> None:
+    """Verifies Gemini 3.8 Flash agents are pinned to the global Vertex AI endpoint."""
+    assert LOCATION == "global"
+    assert isinstance(primary_fraud_auditor.model, GlobalGemini)
+    assert primary_fraud_auditor.model.model == "gemini-3.8-flash"
+    assert primary_fraud_auditor.model.location == "global"
+
+    assert isinstance(fraud_verification_judge.model, GlobalGemini)
+    assert fraud_verification_judge.model.model == "gemini-3.8-flash"
+    assert fraud_verification_judge.model.location == "global"
+
+
+def test_telemetry_and_no_op_instrumentor() -> None:
+    """Verifies telemetry configuration and no-op AdkApp instrumentor builder."""
+    assert _no_op_instrumentor_builder("test-project") is None
+    setup_telemetry()
+    assert os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY") == "true"
+    assert os.environ.get("OTEL_SERVICE_NAME") == "medicaid-fraud-adk"

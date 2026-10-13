@@ -30,7 +30,18 @@ if not PROJECT_ID:
         "Please provide a valid Google Cloud Project ID via environment or .env file."
     )
 
-LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
+_raw_location = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
+# Regional deployment target for Vertex AI Agent Engine / Cloud Run (default: us-central1)
+REGION = os.getenv(
+    "GOOGLE_CLOUD_REGION",
+    _raw_location if _raw_location != "global" else "us-central1",
+)
+
+# Gemini 3.x models (e.g. gemini-3.8-flash) require the 'global' Vertex AI endpoint
+# even when the hosting container is deployed in a regional location like us-central1.
+LOCATION = os.getenv("GEMINI_MODEL_LOCATION", "global")
+os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
+
 USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() in (
     "true",
     "1",

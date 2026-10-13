@@ -13,15 +13,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import cached_property
 import re
+from typing import Any
 
 from google.adk.agents import Agent, SequentialAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.models import Gemini
-from google.genai import types
+from google.genai import Client, types
 
-from .config import DATASET_ID, FULL_TABLE_REF, LOCATION, PROJECT_ID, TABLE_ID
+from .config import (
+    DATASET_ID,
+    FULL_TABLE_REF,
+    LOCATION,
+    PROJECT_ID,
+    TABLE_ID,
+    USE_VERTEXAI,
+)
+
+
+class GlobalGemini(Gemini):
+    """Gemini model wrapper that pins Vertex AI inference to the global endpoint.
+
+    Ensures Gemini 3.x models (such as gemini-3.8-flash) always route inference
+    requests to the 'global' Vertex AI endpoint even when the hosting container
+    (Vertex AI Agent Engine or Cloud Run) runs in a regional location like us-central1.
+    """
+
+    location: str = LOCATION
+
+    @cached_property
+    def api_client(self) -> Client:
+        """Provides the google.genai.Client pinned to the configured model location."""
+        base_url, api_version = self._base_url_and_api_version
+        kwargs_for_http_options: dict[str, Any] = {
+            "headers": self._tracking_headers(),
+            "retry_options": self.retry_options,
+            "base_url": base_url,
+        }
+        if api_version:
+            kwargs_for_http_options["api_version"] = api_version
+
+        kwargs: dict[str, Any] = {
+            "http_options": types.HttpOptions(**kwargs_for_http_options),
+        }
+        if USE_VERTEXAI or self.model.startswith("projects/"):
+            kwargs["vertexai"] = True
+            kwargs["project"] = PROJECT_ID
+            kwargs["location"] = self.location
+
+        return Client(**kwargs)
 from .tools import (
     audit_address_clustering,
     audit_credential_recycling,
@@ -108,9 +150,9 @@ You are the Primary Medicaid Application Auditor. Your sole mission is to analyz
 
 primary_fraud_auditor = Agent(
     name="primary_fraud_auditor",
-    model=Gemini(
+    model=GlobalGemini(
         model="gemini-3.8-flash",
-        client_options={"location": LOCATION},
+        location=LOCATION,
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=PRIMARY_AUDITOR_INSTRUCTION,
@@ -206,9 +248,9 @@ Conclude with:
 
 fraud_verification_judge = Agent(
     name="fraud_verification_judge",
-    model=Gemini(
+    model=GlobalGemini(
         model="gemini-3.8-flash",
-        client_options={"location": LOCATION},
+        location=LOCATION,
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=JUDGE_INSTRUCTION,

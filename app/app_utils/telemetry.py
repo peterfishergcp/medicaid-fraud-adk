@@ -17,28 +17,40 @@ import os
 
 
 def setup_telemetry() -> str | None:
-    """Configure OpenTelemetry and GenAI telemetry with GCS upload."""
+    """Configure OpenTelemetry and GenAI telemetry with Cloud Trace, Cloud Logging, and optional GCS upload."""
+    os.environ.setdefault("GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY", "true")
+    os.environ.setdefault("OTEL_SERVICE_NAME", "medicaid-fraud-adk")
+    os.environ.setdefault(
+        "OTEL_SEMCONV_STABILITY_OPT_IN", "gen_ai_latest_experimental"
+    )
+    commit_sha = os.environ.get("COMMIT_SHA", "dev")
+    os.environ.setdefault(
+        "OTEL_RESOURCE_ATTRIBUTES",
+        f"service.namespace=medicaid-fraud-adk,service.version={commit_sha}",
+    )
 
     raw_bucket = os.environ.get("LOGS_BUCKET_NAME")
     bucket = raw_bucket.removeprefix("gs://").rstrip("/") if raw_bucket else None
     capture_content = os.environ.get(
-        "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "false"
+        "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "NO_CONTENT"
     )
-    if bucket and capture_content != "false":
-        logging.info(
-            "Prompt-response logging enabled - mode: NO_CONTENT (metadata only, no prompts/responses)"
+    if capture_content.lower() == "true":
+        capture_content = "SPAN_AND_EVENT"
+        os.environ["OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"] = (
+            capture_content
         )
-        os.environ["OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"] = "NO_CONTENT"
+    elif capture_content.lower() != "false":
+        os.environ.setdefault(
+            "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "NO_CONTENT"
+        )
+
+    if bucket and capture_content.lower() != "false":
+        logging.info(
+            "Prompt-response GCS logging enabled - mode: %s",
+            os.environ["OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"],
+        )
         os.environ.setdefault("OTEL_INSTRUMENTATION_GENAI_UPLOAD_FORMAT", "jsonl")
         os.environ.setdefault("OTEL_INSTRUMENTATION_GENAI_COMPLETION_HOOK", "upload")
-        os.environ.setdefault(
-            "OTEL_SEMCONV_STABILITY_OPT_IN", "gen_ai_latest_experimental"
-        )
-        commit_sha = os.environ.get("COMMIT_SHA", "dev")
-        os.environ.setdefault(
-            "OTEL_RESOURCE_ATTRIBUTES",
-            f"service.namespace=medicaid-fraud-adk,service.version={commit_sha}",
-        )
         path = os.environ.get("GENAI_TELEMETRY_PATH", "completions")
         os.environ.setdefault(
             "OTEL_INSTRUMENTATION_GENAI_UPLOAD_BASE_PATH",
@@ -46,7 +58,10 @@ def setup_telemetry() -> str | None:
         )
     else:
         logging.info(
-            "Prompt-response logging disabled (set LOGS_BUCKET_NAME=your-bucket and OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT to enable)"
+            "Cloud Trace & OpenTelemetry enabled (mode=%s). Optional GCS upload disabled (set LOGS_BUCKET_NAME to enable).",
+            os.environ.get(
+                "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "NO_CONTENT"
+            ),
         )
 
     return bucket

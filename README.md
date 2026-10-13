@@ -22,8 +22,9 @@ medicaid-fraud-adk/
 │   ├── fast_api_app.py        # FastAPI & Agent Engine HTTP server
 │   └── app_utils/             # Reasoning Engine adapter, telemetry, and typing utilities
 ├── scripts/
-│   ├── deploy_and_publish.py  # Automated 1-step Agent Engine deploy & Gemini Enterprise publisher
-│   └── publish_ge.py          # Versioned Gemini Enterprise agent registration utility
+│   ├── deploy_and_publish.py          # Automated 1-step Agent Engine deploy & Gemini Enterprise publisher
+│   ├── publish_ge.py                  # Versioned Gemini Enterprise agent registration utility
+│   └── enable_telemetry_cloudshell.sh # Cloud Shell script to enable Telemetry APIs & least-privilege IAM roles
 ├── tests/                     # Unit, integration, and ADK evaluation suites
 ├── install.sh                 # Interactive setup & .env configuration script
 ├── Makefile                   # Development, testing, and deployment targets
@@ -62,9 +63,13 @@ Before you begin, ensure you have:
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `GOOGLE_CLOUD_PROJECT` | Target GCP Project ID | Active `gcloud` project |
-| `GOOGLE_CLOUD_LOCATION` | GCP Region / Location | `us-central1` |
+| `GOOGLE_CLOUD_REGION` | Regional deployment target for Agent Engine / Cloud Run | `us-central1` |
+| `GOOGLE_CLOUD_LOCATION` | Vertex AI Gemini model endpoint (`gemini-3.8-flash` requires `global`) | `global` |
+| `GEMINI_MODEL_LOCATION` | Explicit Gemini model location override | `global` |
 | `BIGQUERY_DATASET` | BigQuery Dataset containing Medicaid records | `frauddector` |
 | `BIGQUERY_TABLE` | BigQuery Table name within the dataset | `syntheticdatafraud` |
+| `GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY` | Enables OpenTelemetry Cloud Trace & Cloud Logging export | `true` |
+| `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` | Prompt/response logging mode (`NO_CONTENT`, `EVENT_ONLY`, `SPAN_ONLY`, `SPAN_AND_EVENT`) | `NO_CONTENT` |
 | `GEMINI_ENTERPRISE_APPS` | Comma-separated Gemini Enterprise Engine IDs or full resource URIs | *(Optional)* |
 
 ---
@@ -89,15 +94,47 @@ uv run python scripts/deploy_and_publish.py \
   --apps <your-gemini-enterprise-engine-id>
 ```
 
-> **Note on BigQuery IAM Permissions:** `deploy_and_publish.py` automatically checks and binds `roles/bigquery.dataViewer` and `roles/bigquery.jobUser` to your project's Vertex AI Reasoning Engine Service Account (`service-<PROJECT_NUMBER>@gcp-sa-aiplatform-re.iam.gserviceaccount.com`) so the deployed agent can query your BigQuery dataset.
+> **Note on BigQuery & Telemetry IAM Permissions:** `deploy_and_publish.py` automatically checks and binds `roles/bigquery.dataViewer`, `roles/bigquery.jobUser`, `roles/telemetry.tracesWriter`, `roles/cloudtrace.agent`, `roles/logging.logWriter`, and `roles/monitoring.metricWriter` to your project's Vertex AI Reasoning Engine Service Account (`service-<PROJECT_NUMBER>@gcp-sa-aiplatform-re.iam.gserviceaccount.com`).
+>
+> If your customer environment has strict IAM permissions where the deployer cannot modify project IAM policies, have a Project IAM Admin run the included Cloud Shell script:
+> ```bash
+> ./scripts/enable_telemetry_cloudshell.sh --project <your-project-id> --region us-central1
+> ```
 
 ### Option 2: Cloud Run Deployment
 
-Deploy the agent as a containerized FastAPI service on Cloud Run (automatically forwarding your `.env` settings):
+Deploy the agent as a containerized FastAPI service on Cloud Run (automatically forwarding your `.env` settings, pinning `GOOGLE_CLOUD_LOCATION=global` for `gemini-3.8-flash` while deploying the container to `GOOGLE_CLOUD_REGION`):
 
 ```bash
 make deploy
 ```
+
+---
+
+## Telemetry, Cloud Trace & Observability Setup (Cloud Shell & UI)
+
+### 1. Cloud Shell One-Command Fix (Strict IAM Customer Environments)
+Run the included helper script in **Google Cloud Shell** to enable the required observability APIs (`telemetry.googleapis.com`, `cloudtrace.googleapis.com`, `logging.googleapis.com`, `monitoring.googleapis.com`) and grant least-privilege IAM roles to the Reasoning Engine and Cloud Run service accounts:
+
+```bash
+# Default metadata-only tracing (redacts prompt/response text for HIPAA/PII safety):
+./scripts/enable_telemetry_cloudshell.sh --project <your-project-id> --region us-central1
+
+# Or enable full prompt & response body capture in Cloud Trace and Cloud Logging:
+./scripts/enable_telemetry_cloudshell.sh --project <your-project-id> --region us-central1 --log-prompts
+```
+
+### 2. Where to View Traces & Logs in the Google Cloud Console UI
+- **Vertex AI Agent Engine UI**: Navigate to **Vertex AI → Agent Builder → Agent Engine**, select **`Medicaid Application Auditor`**, and open the **Traces**, **Logs**, and **Monitoring** tabs.
+- **Cloud Trace Explorer**: Navigate to **Observability → Trace → Trace Explorer** (`https://console.cloud.google.com/traces/list`) to inspect the multi-stage span waterfall (`invocation` → `agent_run [medicaid_fraud_pipeline]` → `primary_fraud_auditor` → `call_llm` / `execute_tool` → `fraud_verification_judge`).
+- **Cloud Logging (Logs Explorer)**: Navigate to **Observability → Logging → Logs Explorer** and filter by:
+  ```text
+  resource.type="aiplatform.googleapis.com/ReasoningEngine"
+  ```
+  or for GenAI structured prompt/response events:
+  ```text
+  logName=~"gen_ai" OR "medicaid-fraud-adk"
+  ```
 
 ---
 
@@ -127,6 +164,7 @@ Once running in `make playground` or inside **Gemini Enterprise**, try these tes
 | `make playground` | Launch local ADK Web UI (`http://localhost:8501`) |
 | `make deploy-ge` | Deploy to Vertex AI Agent Engine & publish to Gemini Enterprise |
 | `make deploy` | Deploy containerized FastAPI backend to Cloud Run |
+| `make setup-telemetry` | Enable Telemetry APIs & grant Reasoning Engine / Cloud Run IAM roles |
 | `make test` | Run unit and integration tests |
 | `make eval` | Run ADK evaluation suite |
 | `make lint` | Run code quality checks (`codespell`, `ruff`, `ty`) |
